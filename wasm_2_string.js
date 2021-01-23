@@ -4,22 +4,25 @@ const SEPARATOR = "  ";
 
 
 function array_2_string(value){
-    return `"${value.reduce((s, a) => toStringHex(a, 2) + s, '')}"`;
+    return `"${value.reduce((s, a) => s + (a >= 0x20 && a <= 0x7E ? String.fromCharCode(a) : toStringHex(a, 2)), '')}"`; //
 }
 
-function access_2_string(access, functions){
-    if(access.hasOwnProperty("x")){
-        return " $" + (access.name === "call" ? functions[access.x].name : access.x);
-    }else if(access.hasOwnProperty("n")){
-        return ' ' + access.n;
-    }else if(access.hasOwnProperty("m")){
+function access_2_string(wasm, instruction){
+    if(instruction.hasOwnProperty("x")){
+        return " $" + instruction.x;
+    }else if(instruction.hasOwnProperty("index")){
+        const element = index_2_element(wasm, instruction.index);
+        return " $" + element.func.name;
+    }else if(instruction.hasOwnProperty("n")){
+        return ' ' + instruction.n;
+    }else if(instruction.hasOwnProperty("m")){
         // TODO ADD: .align: 2^.align
         // let align = 1 << access.m.align;
-        return ' offset=' + access.m.offset;
-    }else if(access.hasOwnProperty("bt")){
+        return ' offset=' + instruction.m.offset;
+    }else if(instruction.hasOwnProperty("bt")){
         // TODO: CREATE LABELS
         return ' ##';
-    }else if(access.hasOwnProperty("label")){
+    }else if(instruction.hasOwnProperty("label")){
         // TODO: USE LABELS
         return ' ##';
     }
@@ -27,30 +30,115 @@ function access_2_string(access, functions){
     return '';
 }
 
-function instruction_2_string(value){
-    return value.map(v => `${v.name} ${access_2_string(v)}`).join("\n");
+function descriptor_params_2_string(params){
+    return params.length === 0 ? '' : ` (param ${params.map(e => `${e.type}`).join(' ')})`;
+}
+
+function descriptor_2_string(wasm, descriptor){
+    const section = wasm.find(e => e.name === descriptor.type).value;
+    const value = section[descriptor.d];
+    switch(descriptor.type){
+        case "memory": return "(memory $"+ desc.d;
+        case "func": return "(func ";
+        case "type": return descriptor_params_2_string(value.rt1) + results_2_string(value.rt2);
+    }
+    return '';
+}
+
+function instruction_2_string(wasm, value){
+    return value.map(v => `${v.name}${access_2_string(wasm, v)}`).join("\n");
 }
 
 function limits_2_string(value){
-    return `${value.min}${value.type === 'max' ? ` ${value.max}` : ''}`;
+    return ` ${value.min}${value.type === 'clamp' ? ` ${value.max}` : ''}`;
 }
 
-function table_section_2_string(section, t = SEPARATOR){
-    if(!(section.hasOwnProperty("name") && section.name === "table")){
-        throw `Section Object could not be decoded, expected attribute name='table'`;
-    }
-
-    // WHAT IS XX -> et
-    return section.value.map(data => `${SEPARATOR}(table ${limits_2_string(data.lim)} XX))`).join("\n");
+function function_2_string(data){
+    return "$" + data.module + '.' + data.name;
 }
 
-function memory_section_2_string(section, t = SEPARATOR){
-    if(!(section.hasOwnProperty("name") && section.name === "memory")){
-        throw `Section Object could not be decoded, expected attribute name='memory'`;
-    }
+function import_2_string(wasm, desc){
+    const imports = wasm.find(e => e.name === "import").value.filter(e => e.desc.type === desc.type);
+    const data = imports[desc.d];
+    return ` (import "${data.module}" "${data.name}"`;
+}
 
-    // WHAT IS XX -> Stack of names
-    return section.value.map(data => `${SEPARATOR}(memory XX ${limits_2_string(data.mt)}))`).join("\n");
+function import_subsection_2_string(wasm, import_subsection, t = SEPARATOR){
+
+    return import_subsection.map((data, i) => {
+        let result = SEPARATOR + "(";
+        switch(data.desc.type){
+            case "memory":
+                result += "memory " + function_2_string(data) + " (;" + i + ";)" + limits_2_string(data.desc.mem);// + import_2_string(wasm, data.desc) + ')';
+            break;
+            case "table":
+                result += "table " + function_2_string(data) + " (;" + i + ";)" + limits_2_string(data.desc.table.lim) + " anyfunc";
+            break;
+            case "type":
+                result += "func " + function_2_string(data) + " (;" + i + ";)" + import_2_string(wasm, data.desc) + ')' + descriptor_2_string(wasm, data.desc);
+            break;
+            case "global":
+                result += "global "+ function_2_string(data) + " (;" + i + ";)" + " " + data.desc.global.valtype.type;
+            break;
+        }
+        result += ')';
+        return result;
+    }).join("\n");
+}
+
+function import_section_2_string(wasm, t = SEPARATOR){
+    const imports = wasm.find(e => e.name === "import").value;
+    if(imports === undefined) return '';
+    
+    let result = "";
+    result += import_subsection_2_string(wasm, imports.filter(e => e.desc.type === "memory"), t = SEPARATOR) + '\n';
+    result += import_subsection_2_string(wasm, imports.filter(e => e.desc.type === "table"), t = SEPARATOR) + '\n';
+    result += import_subsection_2_string(wasm, imports.filter(e => e.desc.type === "type"), t = SEPARATOR) + '\n';
+    result += import_subsection_2_string(wasm, imports.filter(e => e.desc.type === "global"), t = SEPARATOR) + '\n';
+    return result;
+}
+
+function offset_2_string(wasm, offset){
+    let result = " (" + offset.name;
+    if(offset.name.startsWith("global")){
+        const globals = wasm.find(e => e.name === "import").value.filter(e => e.desc.type === "global");
+        const name = globals[offset.x];
+        result += ' ' + function_2_string(name);
+    }else{
+        result += " local";
+    }
+    result += ')';
+    return result;
+}
+
+function element_section_2_string(wasm, t = SEPARATOR){
+    const elements = wasm.find(e => e.name === "elem");
+    if(elements === undefined) return '';
+
+    return elements.value.map((data) => {
+        const memorys = data.offset.map(e => offset_2_string(wasm, e)).join(" ");
+        const functions = data.init.map(e => " $func" + e).join(" ");
+        return SEPARATOR + "(elem" + memorys + functions + ')';
+    }).join('');
+}
+
+function table_section_2_string(wasm, t = SEPARATOR){
+    const tables = wasm.find(e => e.name === 'table');
+    return tables.value.map((data, i) => SEPARATOR + "(table (;" + i + ";) "+ limits_2_string(data.lim)+" anyfunc)").join("\n");
+}
+
+function global_section_2_string(wasm, t = SEPARATOR){
+    const globals = wasm.find(e => e.name === "global").value;
+    const imports = wasm.find(e => e.name === "import").value.filter(e => e.desc.type === "global");
+    return globals.filter(e => e.init.find(v => v.name.startsWith("global"))).map((data, i) => {
+        const desc = data.init[0].x;
+        return SEPARATOR + "(global (;" + (desc - 1) + ";) " + import_2_string(imports, desc) + ') '+ data.type.valtype.type +')';
+    }).join("\n");
+}
+
+function memory_section_2_string(wasm, t = SEPARATOR){
+    const tables = wasm.find(e => e.name === 'memory');
+    return tables.value.map((data, i) => SEPARATOR + "(memory (;"+ i +";) " + limits_2_string(data.mt) + ")").join("\n");
 }
 
 function data_section_2_string(section, t = SEPARATOR){
@@ -58,102 +146,146 @@ function data_section_2_string(section, t = SEPARATOR){
         throw `Section Object could not be decoded, expected attribute name='data'`;
     }
 
-    return section.value.map(data => `${SEPARATOR}(data (${instruction_2_string(data.offset)}) ${array_2_string(data.init)})`).join("/n");
+    return section.value.map(data => `${SEPARATOR}(data (${instruction_2_string(data.offset)}) ${array_2_string(data.init)})`).join("\n");
 }
 
-function export_section_2_string(section, t = SEPARATOR){
-    if(!(section.hasOwnProperty("name") && section.name === "export")){
-        throw `Section Object could not be decoded, expected attribute name='export'`;
-    }
-    // TODO What is XXX -> Stack of names dep on type
-    return section.value.map(data => `${SEPARATOR}(export "${data.name}" (${data.desc.type} XXX))`).join("\n");
+function export_section_2_string(wasm, t = SEPARATOR){
+    const exports = wasm.find(e => e.name === 'export');
+    return exports.value.map(data => `${SEPARATOR}(export "${data.name}" ${descriptor_2_string(wasm, data)})`).join("\n");
 }
 
 function params_2_string(params){
-    return params.length === 0 ? '' : `${params.map(e => `(param XX ${e.type})`).join(' ')} `;
+    return params.length === 0 ? '' : `${params.map(e => ` (param XX ${e.type})`).join(' ')}`;
 }
 
 function results_2_string(results){
-    return results.length === 0 ? '' : `${results.map(e => `(result ${e.type})`).join(' ')}`;
+    return results.length === 0 ? '' : `${results.map(e => ` (result ${e.type})`).join(' ')}`;
 }
 
 function locals_2_string(locals, t){
     return locals.length === 0 ? '' : `${locals.map(e => t + "(local XX "+ e.type +')').join('\n')}\n`;
 }
 
-function get_n_2_consume(instruction, functions, functions_type){
+function get_n_2_consume(wasm, instruction){
     if(instruction.hasOwnProperty("n_consume")){
         return instruction.n_consume;
     }else if(instruction.name === "call"){
-        return functions_type[instruction.x].rt1.length;
+        const element = index_2_element(wasm, instruction.index);
+        return element.pipe.rt1.length;
     }
     return 0;
 }
 
-function expresion_2_string(expresion, functions, functions_type, t){
+function expresion_2_string(wasm, expresion, t){
     let result = "";
 
     let instruction = expresion.pop();
 
-    result += t + '(' + instruction.name + access_2_string(instruction, functions, functions_type);
-    let n_consume = get_n_2_consume(instruction, functions, functions_type);
+    result += t + '(' + instruction.name + access_2_string(wasm, instruction);
+    let n_consume = get_n_2_consume(wasm, instruction);
     if(n_consume > 0){
         let instructions = "";
         for(let i = 0; i < n_consume; ++i){
-            instructions = expresion_2_string(expresion, functions, functions_type, t + SEPARATOR) + '\n' + instructions;
+            instructions = expresion_2_string(wasm, expresion, t + SEPARATOR) + '\n' + instructions;
         }
         result += '\n' + instructions + t;
     }else if(["block", "loop"].find(e => e === instruction.name)){
-        result += '\n' + body_2_string(instruction.instr, functions, functions_type, t + SEPARATOR) + t;
+        result += '\n' + body_2_string(wasm, instruction.instr, t + SEPARATOR) + t;
     }
     result += ')';
 
     return result;
 }
 
-function body_2_string(body, functions, functions_type, t = SEPARATOR){
+function body_2_string(wasm, body, t = SEPARATOR){
     let code_2_string = "";
     while(body.length > 0){
-        code_2_string = expresion_2_string(body, functions, functions_type, t) + "\n" + code_2_string;
+        code_2_string = expresion_2_string(wasm, body, t) + "\n" + code_2_string;
     }
     return code_2_string;
 }
+//////////////////
+
+function descriptor_2_element(wasm, index){
+
+}
+
+function index_2_element(wasm, index){
+    const section = wasm.find(e => e.name === index.type).value;
+    return section[index.i];
+}
+
+function parse_wasm(wasm){
+    let functions = [];
+
+    // Import
+    const imports = wasm.find(e => e.name === "import");
+    if(imports !== undefined){
+        const functions_import = imports.value.filter(e => e.desc.type === "type");
+        
+        const functions_import_type = functions_import.map(e => index_2_element(wasm, e.desc));
+        
+        functions = functions.concat(functions_import.map((_, i) => new Object({
+            function: functions_import[i],
+            pipe: functions_import_type[i]
+        })));
+    }
+
+    // Export
+    const exports = wasm.find(e => e.name === "export");
+    if(exports !== undefined){
+        const functions_export = exports.value.filter(e => e.desc.type === "func");
+        const functions_export_type = functions_export.map(e => index_2_element(wasm, e.desc));
+        console.log("-------------");
+        console.log(functions_export);
+        console.log(functions_export_type);
+
+        functions = functions.concat(functions_export.map((_, i) => new Object({
+            function: functions_export[i],
+            pipe: functions_export_type[i]
+        })));
+    }
+
+    return {
+        functions: functions
+    };
+}
 
 function function_section_2_string(wasm, t = SEPARATOR){
-    const functions_type = wasm.find(e => e.name === 'type').value;
-    const functions_idx = wasm.find(e => e.name === 'function').value;
-    const functions = wasm.find(e => e.name === 'export').value.filter(e => e.desc.type === 'func');
+
+    /*const functions_type = wasm.find(e => e.name === 'type').value;
+    const functions = wasm.find(e => e.name === 'export').value;
     const codes = wasm.find(e => e.name === 'code').value;
     const datas = wasm.find(e => e.name === 'data').value;
     const globals = wasm.find(e => e.name === 'global').value;
 
-    return functions_idx.map(idx => {
+    const functions_idx = wasm.find(e => e.name === 'func').value;
+    return functions_idx.map((idx, i) => {
         const type = functions_type[idx];
-        const func = functions[idx];
-        const code = codes[idx].code;
+        const func = functions.find(e => e.desc.d === idx);
         const data = datas[idx];
+        const code = codes[i].code;
+        
         let locals = locals_2_string(code.locals, t + SEPARATOR);
-        let body = body_2_string(code.body, functions, functions_type, t + SEPARATOR);
+        let body = body_2_string(wasm, code.body, t + SEPARATOR);
 
         return SEPARATOR + "(func $"+ func.name + " (; " + idx + " ;) " + params_2_string(type.rt1) + results_2_string(type.rt2) + '\n' +
             locals +
             body +
         SEPARATOR + ')';
-    }).join("\n");
+    }).join("\n");*/
 }
 
 function wasm_2_string(wasm){
+    const parsed_wasm = parse_wasm(wasm);
 
     return '(module\n'+
-        table_section_2_string(wasm.find(e => e.name === 'table'))+'\n'+
-        memory_section_2_string(wasm.find(e => e.name === 'memory'))+'\n'+
-        data_section_2_string(wasm.find(e => e.name === 'data'))+'\n'+
-        export_section_2_string(wasm.find(e => e.name === 'export'))+'\n'+
-        function_section_2_string(wasm)+'\n'+
+        //import_section_2_string(wasm)+'\n'+
+        //element_section_2_string(wasm)+'\n'+
+        //data_section_2_string(wasm.find(e => e.name === 'data'))+'\n'+
+        //export_section_2_string(wasm)+'\n'+
+        //function_section_2_string(wasm)+'\n'+
     ')';
-    //console.log(wasm.find(e => e.name === 'function'));
-    //console.log(wasm.find(e => e.name === 'code').value.map(e => e.code.body)[idx]);
-
 
 }
 
