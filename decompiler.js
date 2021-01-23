@@ -1,18 +1,19 @@
 
 // https://webassembly.github.io/spec/core/binary/modules.html#binary-importsec
 
-const {ubyte, u32, vec, functype, import_wasm, export_wasm, typeidx, table, mem, global, elem, code, data_wasm } = require("./globals");
-const {toHex} = require("./helper");
-const { wasm_2_string } = require("./wasm_2_string");
-
-const fs = require('fs');
-
-//const name = "habbo2020";
-//const wasm_buffer = fs.readFileSync(name);
-const name = "./examples/code-2";
-const wasm_buffer = Buffer.from(fs.readFileSync(name, "ascii"), "base64");
-
-const MAGIC_UINT32 = Buffer.from("\0asm", "ascii").readUInt32LE(0);
+const { customsec } = require("./wasm/custom_section");
+const { typesec } = require("./wasm/type_section");
+const { importsec } = require("./wasm/import_section");
+const { funcsec } = require("./wasm/function_section");
+const { tablesec } = require("./wasm/table_section");
+const { memsec } = require("./wasm/memory_section");
+const { globalsec } = require("./wasm/global_section");
+const { exportsec } = require("./wasm/export_section");
+const { elemsec } = require("./wasm/element_section");
+const { codesec } = require("./wasm/code_section");
+const { datasec } = require("./wasm/data_section");
+const { ubyte, u32 } = require("./wasm/globals");
+const { toHex } = require("./helper");
 
 const DECOMPILE = {
     HEADER: 0x1,
@@ -34,37 +35,35 @@ const SECTION = {
     DATA:     { value: { hex: 0xB, name: "data"     } }
 };
 
-const MAGIC_FUNCTION_TYPES = 0x60;
+const MAGIC_UINT32 = Buffer.from("\0asm", "ascii").readUInt32LE(0);
 
-let decompile_pointer = 0;
-let decompile_step = DECOMPILE.HEADER;
+function decompile(wasm_buffer){
+    let decompile_pointer = 0;
+    let decompile_step = DECOMPILE.HEADER;
 
-const decompilation = new Array();
-while(decompile_pointer < wasm_buffer.length){
-    try{
-        switch(decompile_step){
-            case DECOMPILE.HEADER:
-                const data_header = decompile_header(wasm_buffer, decompile_pointer);
-                decompile_pointer += data_header.bytes;
-                decompile_step = DECOMPILE.SECTION;
-            break;
-            case DECOMPILE.SECTION:
-                const data_section = decompile_section(wasm_buffer, decompile_pointer);
-                decompilation.push(data_section.value);
-                //if(data_section.value.name === "elem") decompile_pointer += 1 << 30;
-                decompile_pointer += data_section.bytes;
+    const decompilation = new Array();
+    while(decompile_pointer < wasm_buffer.length){
+        try{
+            switch(decompile_step){
+                case DECOMPILE.HEADER:
+                    const data_header = decompile_header(wasm_buffer, decompile_pointer);
+                    decompile_pointer += data_header.bytes;
+                    decompile_step = DECOMPILE.SECTION;
+                break;
+                case DECOMPILE.SECTION:
+                    const data_section = decompile_section(wasm_buffer, decompile_pointer);
+                    decompilation.push(data_section.value);
+                    decompile_pointer += data_section.bytes;
+                break;
+            }
+        }catch(e){
+            console.error(e);
             break;
         }
-    }catch(e){
-        console.error(e);
-        break;
     }
-}
-console.log("------------------");
-const wasm_string = wasm_2_string(decompilation);
-//console.log(wasm_string);
 
-fs.writeFileSync(`${name}-decompiled.wasm`, wasm_string);
+    return decompilation;
+}
 
 function decompile_header(data, i){
     let pointer = i;
@@ -86,10 +85,10 @@ function decompile_header(data, i){
 function decompile_section(data, i){
     let pointer = i;
 
-    let id = ubyte(data, pointer);
+    const id = ubyte(data, pointer);
     pointer += id.bytes;
 
-    let length = u32(data, pointer);
+    const length = u32(data, pointer);
     pointer += length.bytes;
 
     let data_section = null;
@@ -109,7 +108,6 @@ function decompile_section(data, i){
         default: throw `Not Implemented SECTION ${toHex(id.value)}`;
     }
     
-    console.log(`${data_section.name.padStart(8, ' ')}\t start: ${toHex(pointer, 8)}\t end: ${toHex(pointer + length.value, 8)}\t size: ${toHex(length.value, 8)}\t count: ${data_section.value.length}`);
     if(length.value !== data_section.bytes){
         throw `Section byte size does not match with section length.`;
     }
@@ -120,3 +118,16 @@ function decompile_section(data, i){
         bytes: pointer - i
     };
 }
+
+function wasm_section_information(wasm){
+    let result = "";
+
+    wasm.forEach(data_section => {
+        console.log(data_section);
+        //result += `${data_section.value.name.padStart(8, ' ')}\t start: ${toHex(pointer, 8)}\t end: ${toHex(pointer + length.value, 8)}\t size: ${toHex(length.value, 8)}\t count: ${data_section.value.length}`;
+    });
+
+    return result;
+}
+
+module.exports = { decompile, wasm_section_information };

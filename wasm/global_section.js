@@ -1,7 +1,6 @@
 const { vec, expr } = require("./globals");
 const { globaltype } = require("./types");
 
-
 function global(data, i){
     let pointer = i;
     

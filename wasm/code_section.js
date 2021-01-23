@@ -1,4 +1,4 @@
-const { vec, expr, locals } = require("./globals");
+const { vec, u32, expr, locals } = require("./globals");
 
 function func(data, i){
     let pointer = i;

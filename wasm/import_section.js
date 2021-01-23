@@ -1,3 +1,7 @@
+const { typeidx } = require("./indices");
+const { tabletype, memtype, globaltype } = require("./types");
+const { name, vec, ubyte } = require("./globals");
+
 const IMPORTTYPE = {
     typeidx:    { value: { hex: 0x0 } },
     tabletype:  { value: { hex: 0x1 } },

@@ -1,4 +1,3 @@
-const { code } = require("./globals");
 const { toStringHex } = require("./helper");
 const SEPARATOR = "  ";
 

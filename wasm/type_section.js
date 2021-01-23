@@ -1,3 +1,5 @@
+const { functype } = require("./types");
+const { vec } = require("./globals");
 
 function typesec(data, i){
     let pointer = i;

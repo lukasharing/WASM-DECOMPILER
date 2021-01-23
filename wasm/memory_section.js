@@ -1,3 +1,5 @@
+const { memtype } = require("./types");
+const { vec } = require("./globals");
 
 function mem(data, i){
     let pointer = i;

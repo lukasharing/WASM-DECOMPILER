@@ -1,4 +1,4 @@
-const { limits, mut, ubyte } = require("./globals");
+const { vec, limits, mut, ubyte } = require("./globals");
 
 const VALTYPE = {
     i32: { value: { hex: 0x7F, type: "i32" } },
@@ -60,6 +60,11 @@ function functype(data, i){
         value: { arguments: rt1.value, result: rt2.value },
         bytes: pointer - i
     };
+}
+
+// Infinite union of all function types
+function funcref(data, i){
+
 }
 
 const MAGIC_ELEMTYPE = 0x70;

@@ -82,12 +82,6 @@ function name(data, i){
     };
 }
 
-
-// Infinite union of all function types
-function funcref(data, i){
-
-}
-
 function memarg(data, i){
     let pointer = i;
 
@@ -165,6 +159,5 @@ module.exports = {
     mut, 
     vec, limits,
     name, locals, expr,
-    memarg,
-    funcref
+    memarg
 };

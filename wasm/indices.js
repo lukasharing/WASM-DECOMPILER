@@ -1,4 +1,4 @@
-
+const { u32 } = require("./globals");
 
 const INDEXTYPE = {
     typeidx:   { value: { type: "type"   } },

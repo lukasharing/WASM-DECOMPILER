@@ -1,3 +1,5 @@
+const { tabletype } = require("./types");
+const { vec } = require("./globals");
 
 function table(data, i){
     let pointer = i;
