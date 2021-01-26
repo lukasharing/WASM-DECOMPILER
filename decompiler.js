@@ -122,9 +122,10 @@ function decompile_section(data, i){
 function wasm_section_information(wasm){
     let result = "";
 
+    let pointer = 0x4 + 0x04;
     wasm.forEach(data_section => {
-        console.log(data_section);
-        //result += `${data_section.value.name.padStart(8, ' ')}\t start: ${toHex(pointer, 8)}\t end: ${toHex(pointer + length.value, 8)}\t size: ${toHex(length.value, 8)}\t count: ${data_section.value.length}`;
+        result += `${data_section.name.padStart(8, ' ')}\t start: ${toHex(pointer, 8)}\t end: ${toHex(pointer + data_section.bytes, 8)}\t size: ${toHex(data_section.bytes, 8)}\t count: ${data_section.value.length}\n`;
+        pointer += data_section.bytes;
     });
 
     return result;

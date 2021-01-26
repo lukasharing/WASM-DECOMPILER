@@ -1,4 +1,6 @@
-const { i32, i64, f32, f64, mut, ubyte } = require("./globals");
+const { i32, i64, f32, f64, sN, ubyte, memarg } = require("./globals");
+const { valtype } = require("./types");
+const { globalidx, localidx, labelidx, funcidx, typeidx } = require("./indices");
 
 // TODO: Check : n_result
 const INSTRYPE = {
@@ -220,6 +222,23 @@ const MAGIC_END = 0x0B;
 const MAGIC_IF = 0x05;
 const MAGIC_MEMORY = 0x00;
 const MAGIC_CALL_INDIRECT = 0x00;
+
+function expr(data, i, stop_opcodes = [MAGIC_END]){
+    let pointer = i;
+
+    let instructions = new Array();
+    do{
+        let expr_instr = instr(data, pointer);
+        instructions.push(expr_instr.value);
+        pointer += expr_instr.bytes;
+    }while(stop_opcodes.findIndex(op => ubyte(data, pointer).value === op) < 0);
+
+    return {
+        value: instructions,
+        bytes: pointer - i + 1 // Jump opcode
+    };
+}
+
 function instr(data, i){
     let pointer = i;
 
@@ -315,7 +334,7 @@ function instr(data, i){
             const x_call = funcidx(data, pointer);
             pointer += x_call.bytes;
 
-            instr_result = Object.assign({ index: Object.assign({ i: x_call.value }, INDEXTYPE.funcidx.value)}, INSTRYPE.call.value);
+            instr_result = Object.assign({ index: x_call.value }, INSTRYPE.call.value);
 
         break;
 
@@ -330,7 +349,7 @@ function instr(data, i){
             }
             pointer += magic_call_indirect.bytes;
 
-            instr_result = Object.assign({ index: Object.assign({ i: x_call_indirect.value }, INDEXTYPE.typeidx.value) }, INSTRYPE.call_indirect.value);
+            instr_result = Object.assign({ index: x_call_indirect.value }, INSTRYPE.call_indirect.value);
 
         break;
         
@@ -697,4 +716,4 @@ function instr(data, i){
     };
 }
 
-module.exports = { instr };
+module.exports = { expr, instr };

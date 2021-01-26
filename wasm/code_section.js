@@ -1,4 +1,21 @@
-const { vec, u32, expr, locals } = require("./globals");
+const { vec, u32 } = require("./globals");
+const { valtype } = require("./types");
+const { expr } = require("./instructions");
+
+function locals(data, i){
+    let pointer = i;
+	
+	const n = u32(data, pointer);
+	pointer += n.bytes;
+
+	const t = valtype(data, pointer);
+	pointer += t.bytes;
+
+	return {
+        value: new Array(n.value).fill(t.value) ,
+        bytes: pointer - i
+    };
+}
 
 function func(data, i){
     let pointer = i;

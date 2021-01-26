@@ -61,7 +61,7 @@ function limits(data, i){
             
             limits_result = Object.assign({ min: n_clamp.value, max: m_clamp.value }, LIMITSTYPE.clamp.value);
         break;
-        default: throw `VALTYPE ${toHex(magic.value)} Not found, expected ${Object.entries(VALTYPE).map(e => `${e[0]} (${toHex(e[1].value.hex)})`).join(" or ")}`;
+        default: throw `LIMITSTYPE ${toHex(magic.value)} Not found, expected ${Object.entries(LIMITSTYPE).map(e => `${e[0]} (${toHex(e[1].value.hex)})`).join(" or ")}`;
     }
 
     return {
@@ -122,42 +122,11 @@ function mut(data, i){
     };
 }
 
-function expr(data, i, stop_opcodes = [MAGIC_END]){
-    let pointer = i;
-
-    let instructions = new Array();
-    do{
-        let expr_instr = instr(data, pointer);
-        instructions.push(expr_instr.value);
-        pointer += expr_instr.bytes;
-    }while(stop_opcodes.findIndex(op => ubyte(data, pointer).value === op) < 0);
-
-    return {
-        value: instructions,
-        bytes: pointer - i + 1 // Jump opcode
-    };
-}
-
-function locals(data, i){
-    let pointer = i;
-	
-	const n = u32(data, pointer);
-	pointer += n.bytes;
-
-	const t = valtype(data, pointer);
-	pointer += t.bytes;
-
-	return {
-        value: new Array(n.value).fill(t.value) ,
-        bytes: pointer - i
-    };
-}
-
 module.exports = { 
-    u32, u64, i32, i64, f32, f64, 
+    u32, u64, uN, i32, i64, sN, f32, f64,
     ibyte, ubyte,
     mut, 
     vec, limits,
-    name, locals, expr,
+    name,
     memarg
 };

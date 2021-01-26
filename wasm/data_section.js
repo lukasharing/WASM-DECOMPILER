@@ -1,5 +1,6 @@
 const { memidx } = require("./indices");
-const { vec, expr, ubyte } = require("./globals");
+const { vec, ubyte } = require("./globals");
+const { expr } = require("./instructions");
 
 function data_wasm(data, i){
     let pointer = i;

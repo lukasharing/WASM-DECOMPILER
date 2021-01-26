@@ -1,5 +1,6 @@
-const { vec, expr } = require("./globals");
+const { vec } = require("./globals");
 const { globaltype } = require("./types");
+const { expr } = require("./instructions");
 
 function global(data, i){
     let pointer = i;

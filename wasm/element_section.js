@@ -1,5 +1,6 @@
 const { tableidx, funcidx } = require("./indices");
-const { vec, expr } = require("./globals");
+const { vec } = require("./globals");
+const { expr } = require("./instructions");
 
 function elem(data, i){
     let pointer = i;
