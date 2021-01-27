@@ -11,9 +11,7 @@ const wasm_buffer = Buffer.from(fs.readFileSync(name, "ascii"), "base64");
 
 const wasm = decompile(wasm_buffer);
 
-//console.log(wasm_section_information(wasm));
-
 const wasm_string = wasm_2_string(wasm);
-//console.log(wasm_string);
+console.log(wasm_string);
 
 //fs.writeFileSync(`${name}-decompiled.wasm`, wasm_string);

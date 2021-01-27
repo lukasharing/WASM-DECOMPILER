@@ -65,6 +65,8 @@ function import_2_string(wasm, desc){
 function import_subsection_2_string(wasm, import_subsection, t = SEPARATOR){
 
     return import_subsection.map((data, i) => {
+        
+        console.log(data);
         let result = SEPARATOR + "(";
         switch(data.desc.type){
             case "memory":
@@ -86,14 +88,12 @@ function import_subsection_2_string(wasm, import_subsection, t = SEPARATOR){
 }
 
 function import_section_2_string(wasm, t = SEPARATOR){
-    const imports = wasm.find(e => e.name === "import").value;
-    if(imports === undefined) return '';
     
     let result = "";
-    result += import_subsection_2_string(wasm, imports.filter(e => e.desc.type === "memory"), t = SEPARATOR) + '\n';
-    result += import_subsection_2_string(wasm, imports.filter(e => e.desc.type === "table"), t = SEPARATOR) + '\n';
-    result += import_subsection_2_string(wasm, imports.filter(e => e.desc.type === "type"), t = SEPARATOR) + '\n';
-    result += import_subsection_2_string(wasm, imports.filter(e => e.desc.type === "global"), t = SEPARATOR) + '\n';
+    result += import_subsection_2_string(wasm, wasm.imports.filter(e => e.desc.type === "memory"), t = SEPARATOR) + '\n';
+    result += import_subsection_2_string(wasm, wasm.imports.filter(e => e.desc.type === "table"), t = SEPARATOR) + '\n';
+    result += import_subsection_2_string(wasm, wasm.imports.filter(e => e.desc.type === "type"), t = SEPARATOR) + '\n';
+    result += import_subsection_2_string(wasm, wasm.imports.filter(e => e.desc.type === "global"), t = SEPARATOR) + '\n';
     return result;
 }
 
@@ -209,47 +209,6 @@ function descriptor_2_element(wasm, index){
 
 }
 
-function index_2_element(wasm, index){
-    const section = wasm.find(e => e.name === index.type).value;
-    return section[index.i];
-}
-
-function parse_wasm(wasm){
-    let functions = [];
-
-    // Import
-    const imports = wasm.find(e => e.name === "import");
-    if(imports !== undefined){
-        const functions_import = imports.value.filter(e => e.desc.type === "type");
-        
-        const functions_import_type = functions_import.map(e => index_2_element(wasm, e.desc));
-        
-        functions = functions.concat(functions_import.map((_, i) => new Object({
-            function: functions_import[i],
-            pipe: functions_import_type[i]
-        })));
-    }
-
-    // Export
-    const exports = wasm.find(e => e.name === "export");
-    if(exports !== undefined){
-        const functions_export = exports.value.filter(e => e.desc.type === "func");
-        const functions_export_type = functions_export.map(e => index_2_element(wasm, e.desc));
-        console.log("-------------");
-        console.log(functions_export);
-        console.log(functions_export_type);
-
-        functions = functions.concat(functions_export.map((_, i) => new Object({
-            function: functions_export[i],
-            pipe: functions_export_type[i]
-        })));
-    }
-
-    return {
-        functions: functions
-    };
-}
-
 function function_section_2_string(wasm, t = SEPARATOR){
 
     /*const functions_type = wasm.find(e => e.name === 'type').value;
@@ -275,11 +234,50 @@ function function_section_2_string(wasm, t = SEPARATOR){
     }).join("\n");*/
 }
 
+function index_2_element(wasm, index){
+    const section = wasm.find(e => e.name === index.type).value;
+    return section[index.i];
+}
+
+function parse_wasm(wasm){
+    let functions = [];
+
+    // Import
+    const imports = wasm.find(e => e.name === "import").value || [];
+    const functions_import = imports.filter(e => e.desc.type === "type");
+    
+    const functions_import_type = functions_import.map(e => index_2_element(wasm, e.desc));
+    
+    functions = functions.concat(functions_import.map((_, i) => new Object({
+        function: functions_import[i],
+        pipe: functions_import_type[i]
+    })));
+
+    // Export
+    const exports = wasm.find(e => e.name === "export").value || [];
+    const functions_export = exports.filter(e => e.desc.type === "func");
+    
+    const functions_descriptors = wasm.find(e => e.name === "func");
+    const functions_export_type = functions_descriptors.value.map(type_descriptor => index_2_element(wasm, type_descriptor));
+
+    functions = functions.concat(functions_export.map((_, i) => new Object({
+        function: functions_export[i],
+        pipe: functions_export_type[i]
+    })));
+
+    return {
+        data: wasm,
+        imports: imports,
+        exports: exports,
+        functions: functions
+    };
+}
+
 function wasm_2_string(wasm){
     const parsed_wasm = parse_wasm(wasm);
 
     return '(module\n'+
-        //import_section_2_string(wasm)+'\n'+
+        import_section_2_string(parsed_wasm)+'\n'+
         //element_section_2_string(wasm)+'\n'+
         //data_section_2_string(wasm.find(e => e.name === 'data'))+'\n'+
         //export_section_2_string(wasm)+'\n'+
