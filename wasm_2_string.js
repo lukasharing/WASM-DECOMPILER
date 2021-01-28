@@ -45,17 +45,6 @@ function function_2_string(data){
     return "$" + data.module + '.' + data.name;
 }
 
-function import_section_2_string(wasm, t = SEPARATOR){
-    
-    let result = "";
-
-    result += import_subsection_2_string(wasm, wasm.imports.filter(e => e.desc.type === "memory"), t = SEPARATOR) + '\n';
-    result += import_subsection_2_string(wasm, wasm.imports.filter(e => e.desc.type === "table"), t = SEPARATOR) + '\n';
-    result += import_subsection_2_string(wasm, wasm.imports.filter(e => e.desc.type === "type"), t = SEPARATOR) + '\n';
-    result += import_subsection_2_string(wasm, wasm.imports.filter(e => e.desc.type === "global"), t = SEPARATOR) + '\n';
-    return result;
-}
-
 function offset_2_string(wasm, offset){
     let result = " (" + offset.name;
     if(offset.name.startsWith("global")){
@@ -191,7 +180,6 @@ function global_section_2_string(wasm, t = SEPARATOR){
     return globals.map((data, i) => {
         const init = data.init;
         const type = data.type;
-        console.log(type);
         //expresion_2_string(wasm, init, t)
         return SEPARATOR + "(global $global" + i + " (" +  + ") "+  +')';
     }).join("\n");
@@ -206,31 +194,29 @@ function descriptor_2_string(wasm, data){
         case "func": return "(func ";
         case "type": return ;
     }*/
-    return descriptor_params_2_string(data.pipe.arguments) + results_2_string(data.pipe.result);
+    return descriptor_params_2_string(data.pipe.arguments.types) + results_2_string(data.pipe.result.types);
 }
 
 function import_2_string(wasm, data){
-    return ` (import "${data.function.module}" "${data.function.name}"`;
+    return ` (import "${data.module}" "${data.name}"`;
 }
 
-function import_subsection_2_string(wasm, import_subsection, t = SEPARATOR){
-    console.log(import_subsection);
-    return import_subsection.map((data, i) => {
-        
+function import_subsections_2_string(wasm, t = SEPARATOR){
+    return wasm.imports.map((data, i) => {
         let result = t + "(";
         switch(data.desc.type){
-            case "memory":
-                result += "memory " + function_2_string(data) + " (;" + i + ";)" + limits_2_string(data.desc.mem);// + import_2_string(wasm, data.desc) + ')';
+            case "mem":
+                result += "memory " + function_2_string(data) + " (;" + i + ";)" + import_2_string(wasm, data) + ')' + limits_2_string(data.desc.limits);
             break;
             case "table":
-                result += "table " + function_2_string(data) + " (;" + i + ";)" + limits_2_string(data.desc.limits) + " anyfunc";
+                result += "table " + function_2_string(data) + " (;" + i + ";)" + import_2_string(wasm, data) + ')' + limits_2_string(data.desc.limits) + " anyfunc";
             break;
             case "type":
                 const func = wasm.functions.find(e => e.type === "import" && e.function.name == data.name);
-                result += "func " + function_2_string(data) + " (;" + i + ";)" + import_2_string(wasm, func) + ')' + descriptor_2_string(wasm, func);
+                result += "func " + function_2_string(data) + " (;" + i + ";)" + import_2_string(wasm, func.function) + ')' + descriptor_2_string(wasm, func);
             break;
             case "global":
-                result += "global "+ function_2_string(data) + " (;" + i + ";)" + " " + data.desc.global.valtype.type;
+                result += "global "+ function_2_string(data) + " (;" + i + ";)" + import_2_string(wasm, data) + ") " + data.desc.valtype.type;
             break;
         }
         result += ')';
@@ -287,8 +273,8 @@ function wasm_2_string(wasm){
     const parsed_wasm = parse_wasm(wasm);
 
     return '(module\n'+
-        import_section_2_string(parsed_wasm)+'\n'+
-        global_section_2_string(parsed_wasm)+'\n'+
+        import_subsections_2_string(parsed_wasm)+'\n'+
+        global_section_2_string(parsed_wasm)+
         //element_section_2_string(wasm)+'\n'+
         //data_section_2_string(wasm.find(e => e.name === 'data'))+'\n'+
         //export_section_2_string(wasm)+'\n'+
