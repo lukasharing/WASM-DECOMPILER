@@ -35,7 +35,7 @@ function resulttype(data, i){
     pointer += types.bytes;
 	
 	return {
-        value: types.value,
+        value: { types: types.value, type: "result" },
         bytes: pointer - i
     };
 }
@@ -57,7 +57,7 @@ function functype(data, i){
     pointer += rt2.bytes;
 
     return {
-        value: { arguments: rt1.value, result: rt2.value },
+        value: { arguments: rt1.value, result: rt2.value, type: "func" },
         bytes: pointer - i
     };
 }
@@ -79,7 +79,7 @@ function elemtype(data, i){
 
     // TODO: WHAT IS FUNCREF
     return {
-        value: { ref: funcref },
+        value: { ref: funcref, type: "elem" },
         bytes: pointer - i
     };
 }
@@ -91,7 +91,7 @@ function memtype(data, i){
 	pointer += lim.bytes;
 
     return {
-        value: { limits: lim.value },
+        value: { limits: lim.value, type: "mem" },
         bytes: pointer - i
     };
 }
@@ -106,7 +106,7 @@ function tabletype(data, i){
     pointer += lim.bytes;
 
     return {
-        value: { limits: lim.value, elementype: et.value },
+        value: { limits: lim.value, elementype: et.value, type: "table" },
         bytes: pointer - i
     };
 }
@@ -121,7 +121,7 @@ function globaltype(data, i){
     pointer += m.bytes;
 
     return {
-        value: { valtype: t.value, mutability: m.value},
+        value: { valtype: t.value, mutability: m.value, type: "global" },
         bytes: pointer - i
     };
 }

@@ -361,7 +361,7 @@ function instr(data, i){
 			const local_get = localidx(data, pointer);
 			pointer += local_get.bytes;
 
-            instr_result = Object.assign({ x: local_get.value }, INSTRYPE.local_get.value);
+            instr_result = Object.assign({ index: local_get.value }, INSTRYPE.local_get.value);
             
         break;
         
@@ -370,7 +370,7 @@ function instr(data, i){
 			const local_set = localidx(data, pointer);
 			pointer += local_set.bytes;
 
-            instr_result = Object.assign({ x: local_set.value }, INSTRYPE.local_set.value);
+            instr_result = Object.assign({ index: local_set.value }, INSTRYPE.local_set.value);
             
         break;
         
@@ -379,7 +379,7 @@ function instr(data, i){
 			const local_tee = localidx(data, pointer);
 			pointer += local_tee.bytes;
 
-			instr_result = Object.assign({ x: local_tee.value }, INSTRYPE.local_tee.value);
+			instr_result = Object.assign({ index: local_tee.value }, INSTRYPE.local_tee.value);
 						
 		break;
 
@@ -388,7 +388,7 @@ function instr(data, i){
 			const global_get = globalidx(data, pointer);
 			pointer += global_get.bytes;
 
-			instr_result = Object.assign({ x: global_get.value }, INSTRYPE.global_get.value);
+			instr_result = Object.assign({ index: global_get.value }, INSTRYPE.global_get.value);
 						
         break;
         
@@ -397,7 +397,7 @@ function instr(data, i){
 			const global_set = globalidx(data, pointer);
 			pointer += global_set.bytes;
 
-			instr_result = Object.assign({ x: global_set.value }, INSTRYPE.global_set.value);
+			instr_result = Object.assign({ index: global_set.value }, INSTRYPE.global_set.value);
 						
 		break;
 
