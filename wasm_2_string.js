@@ -110,13 +110,6 @@ function limits_2_string(value){
     return ` ${value.min}${value.type === 'clamp' ? ` ${value.max}` : ''}`;
 }
 
-function element_section_2_string(wasm, t = SEPARATOR){
-    return wasm.elements.map((data) => {
-        // TODO: Check if these indices have names with that indices
-        return SEPARATOR + "(elem" + expresion_2_string(wasm, data.offset, ' ') + data.init.map(e => " $func" + e.i).join("") + ')';
-    }).join('');
-}
-
 function index_2_element(wasm, index){
     switch(index.type){
         case "globalidx":
@@ -192,12 +185,6 @@ function type_2_string(data){
     return result;
 }
 
-function global_section_2_string(wasm, t = SEPARATOR){
-    return wasm.globals.map((data, i) => {
-        return SEPARATOR + "(global $global" + i + type_2_string(data.type) + expresion_2_string(wasm, data.init, ' ') + ')';
-    }).join("\n");
-}
-
 function descriptor_2_string(wasm, data){
 
     /*const section = wasm.find(e => e.name === descriptor.type).value;
@@ -214,9 +201,8 @@ function import_2_string(wasm, data){
     return ` (import "${data.module}" "${data.name}"`;
 }
 
-function import_subsections_2_string(wasm, t = SEPARATOR){
-    
-    return wasm.imports.data.map((data, i) => {
+function import_section_2_string(wasm, t = SEPARATOR){
+    return wasm.imports.length === 0 ? '' : (wasm.imports.data.map((data, i) => {
         let result = t + "(";
         if(data.hasOwnProperty("index")){ // Index
             const func = wasm.functions.find(e => e.type === "import" && e.function.name == data.name);
@@ -236,7 +222,20 @@ function import_subsections_2_string(wasm, t = SEPARATOR){
         }
         result += ')';
         return result;
-    }).join("\n");
+    }).join("\n") + '\n');
+}
+
+function global_section_2_string(wasm, t = SEPARATOR){
+    return wasm.globals.length === 0 ? '' : (wasm.globals.map((data, i) => {
+        return SEPARATOR + "(global $global" + i + type_2_string(data.type) + expresion_2_string(wasm, data.init, ' ') + ')';
+    }).join('\n') + '\n');
+}
+
+function element_section_2_string(wasm, t = SEPARATOR){
+    return wasm.elements.length === 0 ? '' : (wasm.elements.map((data) => {
+        // TODO: Check if these indices have names with that indices
+        return SEPARATOR + "(elem" + expresion_2_string(wasm, data.offset, ' ') + data.init.map(e => " $func" + e.i).join("") + ')';
+    }).join('\n') + '\n');
 }
 
 function global_index_2_element(wasm, index){
@@ -274,15 +273,15 @@ function parse_wasm(wasm){
     })));
 
     // Globals
-    const globals = wasm.find(e => e.name === "global").value || [];
+    const globals = wasm.find(e => e.name === "global") || { value: [] };
 
     // Elements
-    const elements = wasm.find(e => e.name === "elem").value || [];
+    const elements = wasm.find(e => e.name === "elem") || { value: [] };
 
     return {
         data: wasm,
-        globals: globals,
-        elements: elements,
+        globals: globals.value,
+        elements: elements.value,
         imports: {
             data: imports,
             typeidx: imports_indexes,
@@ -302,9 +301,9 @@ function wasm_2_string(wasm){
     const parsed_wasm = parse_wasm(wasm);
 
     return '(module\n'+
-        import_subsections_2_string(parsed_wasm)+'\n'+
-        global_section_2_string(parsed_wasm)+'\n'+
-        element_section_2_string(parsed_wasm)+'\n'+
+        import_section_2_string(parsed_wasm)+
+        global_section_2_string(parsed_wasm)+
+        element_section_2_string(parsed_wasm)+
         //data_section_2_string(wasm.find(e => e.name === 'data'))+'\n'+
         //export_section_2_string(wasm)+'\n'+
         //function_section_2_string(wasm)+'\n'+
