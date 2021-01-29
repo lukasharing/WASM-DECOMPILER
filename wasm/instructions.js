@@ -302,7 +302,7 @@ function instr(data, i){
             const l_br = labelidx(data, pointer);
             pointer += l_br.bytes;
             
-            instr_result = Object.assign({ label: l_br.value}, INSTRYPE.br.value);
+            instr_result = Object.assign({ index: l_br.value}, INSTRYPE.br.value);
 
         break;
 
@@ -311,7 +311,7 @@ function instr(data, i){
             const l_br_if = labelidx(data, pointer);
             pointer += l_br_if.bytes;
             
-            instr_result = Object.assign({ label: l_br_if.value}, INSTRYPE.br_if.value);
+            instr_result = Object.assign({ index: l_br_if.value}, INSTRYPE.br_if.value);
 
         break;
 
@@ -323,7 +323,7 @@ function instr(data, i){
             const lN_br_table = labelidx(data, pointer);
             pointer += lN_br_table.bytes;
             
-            instr_result = Object.assign({ label: lN_br_table.value, lN: lN_br_table.value}, INSTRYPE.br_table.value);
+            instr_result = Object.assign({ index: lN_br_table.value, lN: lN_br_table.value}, INSTRYPE.br_table.value);
 
         break;
         

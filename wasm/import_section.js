@@ -21,26 +21,26 @@ function importdesc(data, i){
             const x = typeidx(data, pointer);
             pointer += x.bytes;
 
-            importdesc_result = x.value;
+            importdesc_result = { index: x.value };
         break;
         case IMPORTTYPE.tabletype.value.hex: 
             const tt = tabletype(data, pointer);
             pointer += tt.bytes;
 
-            importdesc_result = tt.value;
+            importdesc_result = { type: tt.value };
         break;
         case IMPORTTYPE.memtype.value.hex:
             const mt = memtype(data, pointer);
             pointer += mt.bytes;
 
-            importdesc_result = mt.value;
+            importdesc_result = { type: mt.value };
         break;
         case IMPORTTYPE.globaltype.value.hex:
 
             const gt = globaltype(data, pointer);
             pointer += gt.bytes;
 
-            importdesc_result = gt.value;
+            importdesc_result = { type: gt.value };
         break;
         default: throw `IMPORTYPE ${toHex(magic.value)} Not found, expected ${Object.entries(IMPORTTYPE).map(e => `${e[0]} (${toHex(e[1].value.hex)})`).join(" or ")}`;
     }
@@ -66,7 +66,7 @@ function import_wasm(data, i){
     pointer += d.bytes;
 
     return {
-        value: {module: mod.value, name: nm.value, desc: d.value},
+        value: Object.assign({module: mod.value, name: nm.value}, d.value),
         bytes: pointer - i
     };
 }

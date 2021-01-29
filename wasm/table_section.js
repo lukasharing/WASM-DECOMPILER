@@ -8,7 +8,7 @@ function table(data, i){
     pointer += tt.bytes;
 
     return {
-        value: tt.value,
+        value: { type: tt.value },
         bytes: pointer - i
     };
 }

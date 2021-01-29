@@ -19,22 +19,22 @@ function exportdesc(data, i){
         case EXPORTTYPE.funcidx.value.hex  : 
             const x_functidx = funcidx(data, pointer);
             pointer += x_functidx.bytes;
-            export_result = x_functidx.value;
+            export_result = { index: x_functidx.value };
         break;
         case EXPORTTYPE.tableidx.value.hex :
             const x_tableidx = tableidx(data, pointer);
             pointer += x_tableidx.bytes;
-            export_result = x_tableidx.value;    
+            export_result = { index: x_tableidx.value };
         break;
         case EXPORTTYPE.memidx.value.hex   :
             const x_memidx = memidx(data, pointer);
             pointer += x_memidx.bytes;
-            export_result = x_memidx.value;
+            export_result = { index: x_memidx.value };
         break;
         case EXPORTTYPE.globalidx.value.hex:
             const x_globalidx = globalidx(data, pointer);
             pointer += x_globalidx.bytes;
-            export_result = x_globalidx.value;
+            export_result = {index: x_globalidx.value };
         break;
         default: throw `EXPORTYPE ${toHex(magic.value)} Not found, expected ${Object.entries(EXPORTTYPE).map(e => `${e[0]} (${toHex(e[1].value.hex)})`).join(" or ")}`;
     }
@@ -56,7 +56,7 @@ function export_wasm(data, i){
     pointer += d.bytes;
 
     return {
-        value: { name: nm.value, desc: d.value },
+        value: Object.assign({ name: nm.value }, d.value),
         bytes: pointer - i
     };
 }

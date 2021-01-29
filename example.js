@@ -11,7 +11,8 @@ const wasm_buffer = fs.readFileSync(name);
 
 const wasm = decompile(wasm_buffer);
 
-const wasm_string = wasm_2_string(wasm);
-console.log(wasm_string);
+console.log(wasm_section_information(wasm));
 
-//fs.writeFileSync(`${name}-decompiled.wasm`, wasm_string);
+const wasm_string = wasm_2_string(wasm);
+
+fs.writeFileSync(`${name}-decompiled.wasm`, wasm_string);

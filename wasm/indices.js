@@ -1,13 +1,13 @@
 const { u32 } = require("./globals");
 
 const INDEXTYPE = {
-    typeidx:   { value: { type: "type"   } },
-    funcidx:   { value: { type: "func"   } },
-    tableidx:  { value: { type: "table"  } },
-    memidx:    { value: { type: "mem"    } },
-    globalidx: { value: { type: "global" } },
-    localidx:  { value: { type: "local"  } },
-    labelidx:  { value: { type: "label"  } },
+    typeidx:   { value: { type: "typeidx"   } },
+    funcidx:   { value: { type: "funcidx"   } },
+    tableidx:  { value: { type: "tableidx"  } },
+    memidx:    { value: { type: "memidx"    } },
+    globalidx: { value: { type: "globalidx" } },
+    localidx:  { value: { type: "localidx"  } },
+    labelidx:  { value: { type: "labelidx"  } },
 };
 
 function funcidx(data, i){

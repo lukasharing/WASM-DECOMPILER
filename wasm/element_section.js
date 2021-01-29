@@ -14,7 +14,7 @@ function elem(data, i){
     pointer += y.bytes;
 
     return {
-        value: { table: x.value, offset: e.value, init: y.value },
+        value: { index: x.value, offset: e.value, init: y.value },
         bytes: pointer - i
     };
 }

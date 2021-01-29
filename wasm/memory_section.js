@@ -8,7 +8,7 @@ function mem(data, i){
     pointer += mt.bytes;
 
     return {
-        value: { mt: mt.value },
+        value: { type: mt.value },
         bytes: pointer - i
     };
 }

@@ -15,7 +15,7 @@ function data_wasm(data, i){
 	pointer += b.bytes;
 
     return {
-        value: { data: x.value, offset: e.value, init: b.value },
+        value: { index: x.value, offset: e.value, init: b.value },
         bytes: pointer - i
     };
 }
