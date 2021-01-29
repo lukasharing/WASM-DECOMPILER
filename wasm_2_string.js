@@ -247,7 +247,7 @@ function parse_wasm(wasm){
     let functions = [];
 
     // Import
-    const imports = wasm.find(e => e.name === "import").value || [];
+    const imports = (wasm.find(e => e.name === "import") || { value: [] }).value;
     const imports_indexes = imports.filter(e => e.hasOwnProperty("index"));
     const imports_types = imports.filter(e => e.hasOwnProperty("type"));
     
@@ -260,7 +260,7 @@ function parse_wasm(wasm){
     })));
 
     // Export
-    const exports = wasm.find(e => e.name === "export").value || [];
+    const exports = (wasm.find(e => e.name === "export") || { value: [] }).value;
     const exports_indexes = exports.filter(e => e.hasOwnProperty("index"));
 
     const functions_descriptors = wasm.find(e => e.name === "func");
@@ -273,15 +273,15 @@ function parse_wasm(wasm){
     })));
 
     // Globals
-    const globals = wasm.find(e => e.name === "global") || { value: [] };
+    const globals = (wasm.find(e => e.name === "global") || { value: [] }).value;
 
     // Elements
-    const elements = wasm.find(e => e.name === "elem") || { value: [] };
+    const elements = (wasm.find(e => e.name === "elem") || { value: [] }).value;
 
     return {
         data: wasm,
-        globals: globals.value,
-        elements: elements.value,
+        globals: globals,
+        elements: elements,
         imports: {
             data: imports,
             typeidx: imports_indexes,

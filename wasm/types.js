@@ -1,3 +1,4 @@
+const { toHex } = require("../helper");
 const { vec, limits, mut, ubyte } = require("./globals");
 
 const VALTYPE = {

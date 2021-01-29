@@ -1,3 +1,4 @@
+const { toHex } = require("../helper");
 const { typeidx } = require("./indices");
 const { tabletype, memtype, globaltype } = require("./types");
 const { name, vec, ubyte } = require("./globals");

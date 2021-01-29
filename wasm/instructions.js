@@ -1,6 +1,8 @@
-const { i32, i64, f32, f64, sN, ubyte, memarg } = require("./globals");
+const { vec, i32, i64, f32, f64, sN, ubyte, memarg } = require("./globals");
 const { valtype } = require("./types");
 const { globalidx, localidx, labelidx, funcidx, typeidx } = require("./indices");
+
+const { toHex } = require("../helper");
 
 // TODO: Check : n_result
 const INSTRYPE = {
