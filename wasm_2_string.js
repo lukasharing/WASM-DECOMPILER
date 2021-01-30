@@ -180,14 +180,14 @@ function import_section_2_string(wasm, t = SEPARATOR){
 
 function global_section_2_string(wasm, t = SEPARATOR){
     return wasm.globals.length === 0 ? '' : (wasm.globals.map((data, i) => {
-        return SEPARATOR + "(global $global" + i + type_2_string(data.type) + expresion_2_string(wasm, { locals: [], body: data.init }, ' ') + ')';
+        return SEPARATOR + "(global $global" + i + type_2_string(data.type) + " (" + expresion_2_string(wasm, { locals: [], body: data.init }, '') + ')';
     }).join('\n') + '\n');
 }
 
 function element_section_2_string(wasm, t = SEPARATOR){
     return wasm.elements.length === 0 ? '' : (wasm.elements.map((data) => {
         // TODO: Check if these indices have names with that indices
-        return SEPARATOR + "(elem" + expresion_2_string(wasm, { locals: [], body: data.offset }, ' ') + data.init.map(e => " $func" + e.i).join("") + ')';
+        return SEPARATOR + "(elem (" + expresion_2_string(wasm, { locals: [], body: data.offset }, '') + data.init.map(e => " $func" + e.i).join("") + ')';
     }).join('\n') + '\n');
 }
 
