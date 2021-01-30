@@ -71,10 +71,6 @@ function access_2_string(wasm, context, instruction){
     return '';
 }
 
-/*function instruction_2_string(wasm, value){
-    return value.map(v => `${v.name}${access_2_string(wasm, v)}`).join("\n");
-}*/
-
 function get_n_2_consume(wasm, context, instruction){
     if(instruction.hasOwnProperty("n_consume")){
         return instruction.n_consume;
@@ -92,7 +88,7 @@ function locals_2_string(wasm, func, t){
 function body_2_string(wasm, context, t = SEPARATOR){
     let code_2_string = "";
     while(context.body.length > 0){
-        code_2_string = expresion_2_string(wasm, context, t) + "\n" + code_2_string;
+        code_2_string = expresion_2_string(wasm, context, t) + code_2_string;
     }
     return code_2_string;
 }
@@ -102,20 +98,19 @@ function expresion_2_string(wasm, context, t){
 
     let instruction = context.body.pop();
 
-    result += t + '(' + instruction.name + access_2_string(wasm, context, instruction);
+    result += t + instruction.name + access_2_string(wasm, context, instruction) + '\n';
     
     let n_consume = get_n_2_consume(wasm, context, instruction);
 
     if(n_consume > 0){
-        let instructions = "";
+        let instructions = new Array(n_consume);
         for(let i = 0; i < n_consume; ++i){
-            instructions = expresion_2_string(wasm, context, t + SEPARATOR) + '\n' + instructions;
+            instructions[i] = expresion_2_string(wasm, context, t + SEPARATOR);
         }
-        result += '\n' + instructions + t;
+        result += instructions.join('');
     }else if(["block", "loop"].find(e => e === instruction.name)){
-        result += '\n' + body_2_string(wasm, { locals: [], body: instruction.instr }, t + SEPARATOR) + t;
+        result += body_2_string(wasm, { locals: [], body: instruction.instr }, t + SEPARATOR);
     }
-    result += ')';
 
     return result;
 }
@@ -185,14 +180,14 @@ function import_section_2_string(wasm, t = SEPARATOR){
 
 function global_section_2_string(wasm, t = SEPARATOR){
     return wasm.globals.length === 0 ? '' : (wasm.globals.map((data, i) => {
-        return SEPARATOR + "(global $global" + i + type_2_string(data.type) + expresion_2_string(wasm, data.init, ' ') + ')';
+        return SEPARATOR + "(global $global" + i + type_2_string(data.type) + expresion_2_string(wasm, { locals: [], body: data.init }, ' ') + ')';
     }).join('\n') + '\n');
 }
 
 function element_section_2_string(wasm, t = SEPARATOR){
     return wasm.elements.length === 0 ? '' : (wasm.elements.map((data) => {
         // TODO: Check if these indices have names with that indices
-        return SEPARATOR + "(elem" + expresion_2_string(wasm, data.offset, ' ') + data.init.map(e => " $func" + e.i).join("") + ')';
+        return SEPARATOR + "(elem" + expresion_2_string(wasm, { locals: [], body: data.offset }, ' ') + data.init.map(e => " $func" + e.i).join("") + ')';
     }).join('\n') + '\n');
 }
 
