@@ -93,18 +93,18 @@ function decompile_section(data, i){
 
     let data_section = null;
     switch(id.value){
-        case SECTION.CUSTOM.value.hex   : data_section = Object.assign(customsec(data, pointer), SECTION.CUSTOM.value  ); break;
-        case SECTION.TYPE.value.hex     : data_section = Object.assign(typesec(data, pointer),   SECTION.TYPE.value    ); break;
-        case SECTION.IMPORT.value.hex   : data_section = Object.assign(importsec(data, pointer), SECTION.IMPORT.value  ); break;
-        case SECTION.FUNCTION.value.hex : data_section = Object.assign(funcsec(data, pointer),   SECTION.FUNCTION.value); break;
-        case SECTION.TABLE.value.hex    : data_section = Object.assign(tablesec(data, pointer),  SECTION.TABLE.value   ); break;
-        case SECTION.MEMORY.value.hex   : data_section = Object.assign(memsec(data, pointer),    SECTION.MEMORY.value  ); break;
-        case SECTION.GLOBAL.value.hex   : data_section = Object.assign(globalsec(data, pointer), SECTION.GLOBAL.value  ); break;
-        case SECTION.EXPORT.value.hex   : data_section = Object.assign(exportsec(data, pointer), SECTION.EXPORT.value  ); break;
-        case SECTION.START.value.hex    : throw `Not Implemented SECTION START`;   break;
-        case SECTION.ELEMENT.value.hex  : data_section = Object.assign(elemsec(data, pointer), SECTION.ELEMENT.value   ); break;
-        case SECTION.CODE.value.hex     : data_section = Object.assign(codesec(data, pointer), SECTION.CODE.value      ); break;
-        case SECTION.DATA.value.hex     : data_section = Object.assign(datasec(data, pointer), SECTION.DATA.value      ); break;
+        case SECTION.CUSTOM.value.hex  : data_section = Object.assign(customsec(data, pointer), SECTION.CUSTOM.value  ); break;
+        case SECTION.TYPE.value.hex    : data_section = Object.assign(typesec(data, pointer),   SECTION.TYPE.value    ); break;
+        case SECTION.IMPORT.value.hex  : data_section = Object.assign(importsec(data, pointer), SECTION.IMPORT.value  ); break;
+        case SECTION.FUNCTION.value.hex: data_section = Object.assign(funcsec(data, pointer),   SECTION.FUNCTION.value); break;
+        case SECTION.TABLE.value.hex   : data_section = Object.assign(tablesec(data, pointer),  SECTION.TABLE.value   ); break;
+        case SECTION.MEMORY.value.hex  : data_section = Object.assign(memsec(data, pointer),    SECTION.MEMORY.value  ); break;
+        case SECTION.GLOBAL.value.hex  : data_section = Object.assign(globalsec(data, pointer), SECTION.GLOBAL.value  ); break;
+        case SECTION.EXPORT.value.hex  : data_section = Object.assign(exportsec(data, pointer), SECTION.EXPORT.value  ); break;
+        case SECTION.START.value.hex   : throw `Not Implemented SECTION START`;   break;
+        case SECTION.ELEMENT.value.hex : data_section = Object.assign(elemsec(data, pointer), SECTION.ELEMENT.value   ); break;
+        case SECTION.CODE.value.hex    : data_section = Object.assign(codesec(data, pointer), SECTION.CODE.value      ); break;
+        case SECTION.DATA.value.hex    : data_section = Object.assign(datasec(data, pointer), SECTION.DATA.value      ); break;
         default: throw `Not Implemented SECTION ${toHex(id.value)}`;
     }
     

@@ -1,4 +1,8 @@
 (module
   (func $env.printf (;0;) (import "env" "printf") (param i32 i32) (result i32))
   (func $env.scanf (;1;) (import "env" "scanf") (param i32 i32) (result i32))
+  (; TODO: Google format for EXPORT MEMIDX ;)
+  (func $main (;1;) (export "main") (result i32))
+  (func $_Z21convertDecimalToOctali (;2;) (export "_Z21convertDecimalToOctali") (param i32) (result i32))
+
 )

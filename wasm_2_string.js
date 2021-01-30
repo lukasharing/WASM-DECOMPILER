@@ -7,16 +7,8 @@ function array_2_string(value){
     return `"${value.reduce((s, a) => s + (a >= 0x20 && a <= 0x7E ? String.fromCharCode(a) : toStringHex(a, 2)), '')}"`; //
 }
 
-function descriptor_params_2_string(params){
-    return params.length === 0 ? '' : ` (param ${params.map(e => `${e.type}`).join(' ')})`;
-}
-
-function instruction_2_string(wasm, value){
-    return value.map(v => `${v.name}${access_2_string(wasm, v)}`).join("\n");
-}
-
 function function_2_string(data){
-    return "$" + data.module + '.' + data.name;
+    return "$" + (data.hasOwnProperty("module") ? (data.module + '.') : '') + data.name;
 }
 
 function offset_2_string(wasm, offset){
@@ -31,7 +23,7 @@ function offset_2_string(wasm, offset){
     result += ')';
     return result;
 }
-
+/*
 function table_section_2_string(wasm, t = SEPARATOR){
     const tables = wasm.find(e => e.name === 'table');
     return tables.value.map((data, i) => SEPARATOR + "(table (;" + i + ";) "+ limits_2_string(data.lim)+" anyfunc)").join("\n");
@@ -47,34 +39,17 @@ function data_section_2_string(section, t = SEPARATOR){
         throw `Section Object could not be decoded, expected attribute name='data'`;
     }
 
-    return section.value.map(data => `${SEPARATOR}(data (${instruction_2_string(data.offset)}) ${array_2_string(data.init)})`).join("\n");
-}
-
-function export_section_2_string(wasm, t = SEPARATOR){
-    const exports = wasm.find(e => e.name === 'export');
-    return exports.value.map(data => `${SEPARATOR}(export "${data.name}" ${descriptor_2_string(wasm, data)})`).join("\n");
+    return section.value.map(data => `${SEPARATOR}(data (${instruction_2_string(wasm, data.offset)}) ${array_2_string(data.init)})`).join("\n");
 }
 
 function params_2_string(params){
     return params.length === 0 ? '' : `${params.map(e => ` (param XX ${e.type})`).join(' ')}`;
 }
 
-function results_2_string(results){
-    return results.length === 0 ? '' : `${results.map(e => ` (result ${e.type})`).join(' ')}`;
-}
-
 function locals_2_string(locals, t){
     return locals.length === 0 ? '' : `${locals.map(e => t + "(local XX "+ e.type +')').join('\n')}\n`;
 }
-
-
-function body_2_string(wasm, body, t = SEPARATOR){
-    let code_2_string = "";
-    while(body.length > 0){
-        code_2_string = expresion_2_string(wasm, body, t) + "\n" + code_2_string;
-    }
-    return code_2_string;
-}
+*/
 //////////////////
 
 function descriptor_2_element(wasm, index){
@@ -110,20 +85,27 @@ function limits_2_string(value){
     return ` ${value.min}${value.type === 'clamp' ? ` ${value.max}` : ''}`;
 }
 
-function index_2_element(wasm, index){
-    switch(index.type){
+function index_2_element(wasm, instruction){
+    switch(instruction.index.type){
         case "globalidx":
-            return wasm.imports.globaltype[index.i];
+            return wasm.imports.globaltype[instruction.index.i];
+        break;
+        case "funcidx":
+
+        break;
+        case "localidx":
+
+            console.log(instruction);
+
         break;
     }
 }
 
-function access_2_string(wasm, instruction){
+function access_2_string(wasm, context, instruction){
     if(instruction.hasOwnProperty("x")){
         return " $" + instruction.x;
     }else if(instruction.hasOwnProperty("index")){
-        //console.log(wasm.imports, instruction.index);
-        const element = index_2_element(wasm, instruction.index);
+        const element = index_2_element(wasm, context, instruction);
         return ' ' + function_2_string(element);
     }else if(instruction.hasOwnProperty("n")){
         return ' ' + instruction.n;
@@ -142,21 +124,26 @@ function access_2_string(wasm, instruction){
     return '';
 }
 
+/*function instruction_2_string(wasm, value){
+    return value.map(v => `${v.name}${access_2_string(wasm, v)}`).join("\n");
+}*/
+
 function get_n_2_consume(wasm, instruction){
     if(instruction.hasOwnProperty("n_consume")){
         return instruction.n_consume;
     }else if(instruction.name === "call"){
-        const element = index_2_element(wasm.functions, instruction.index);
+        const element = index_2_element(wasm.functions, instruction);
         return element.pipe.rt1.length;
     }
     return 0;
 }
 
-function expresion_2_string(wasm, expresion, t){
+function expresion_2_string(wasm, context, t){
     let result = "";
 
     let instruction = expresion.pop();
 
+    console.log(expresion);
     result += t + '(' + instruction.name + access_2_string(wasm, instruction);
     
     let n_consume = get_n_2_consume(wasm, instruction);
@@ -174,6 +161,14 @@ function expresion_2_string(wasm, expresion, t){
     return result;
 }
 
+function body_2_string(wasm, context, t = SEPARATOR){
+    let code_2_string = "";
+    while(context.body.length > 0){
+        code_2_string = expresion_2_string(wasm, context, t) + "\n" + code_2_string;
+    }
+    return code_2_string;
+}
+
 function type_2_string(data){
     let result = "";
     switch(data.type){
@@ -185,8 +180,15 @@ function type_2_string(data){
     return result;
 }
 
-function descriptor_2_string(wasm, data){
+function descriptor_params_2_string(params){
+    return params.length === 0 ? '' : ` (param ${params.map(e => `${e.type}`).join(' ')})`;
+}
 
+function results_2_string(results){
+    return results.length === 0 ? '' : `${results.map(e => ` (result ${e.type})`).join(' ')}`;
+}
+
+function descriptor_2_string(wasm, data){
     /*const section = wasm.find(e => e.name === descriptor.type).value;
     const value = section[descriptor.d];
     switch(descriptor.type){
@@ -197,8 +199,12 @@ function descriptor_2_string(wasm, data){
     return descriptor_params_2_string(data.pipe.arguments.types) + results_2_string(data.pipe.result.types);
 }
 
-function import_2_string(wasm, data){
+function import_2_string(data){
     return ` (import "${data.module}" "${data.name}"`;
+}
+
+function export_2_string(data){
+    return ` (export "${data.name}"`;
 }
 
 function import_section_2_string(wasm, t = SEPARATOR){
@@ -206,17 +212,17 @@ function import_section_2_string(wasm, t = SEPARATOR){
         let result = t + "(";
         if(data.hasOwnProperty("index")){ // Index
             const func = wasm.functions.find(e => e.type === "import" && e.function.name == data.name);
-            result += "func " + function_2_string(data) + " (;" + i + ";)" + import_2_string(wasm, func.function) + ')' + descriptor_2_string(wasm, func);
+            result += "func " + function_2_string(data) + " (;" + i + ";)" + import_2_string(func.function) + ')' + descriptor_2_string(wasm, func);
         }else{ // Type
             switch(data.type){
                 case "memtype":
-                    result += "memory " + function_2_string(data) + " (;" + i + ";)" + import_2_string(wasm, data) + ')' + limits_2_string(data.desc.limits);
+                    result += "memory " + function_2_string(data) + " (;" + i + ";)" + import_2_string(data) + ')' + limits_2_string(data.desc.limits);
                 break;
                 case "tabletype":
-                    result += "table " + function_2_string(data) + " (;" + i + ";)" + import_2_string(wasm, data) + ')' + limits_2_string(data.desc.limits) + " anyfunc";
+                    result += "table " + function_2_string(data) + " (;" + i + ";)" + import_2_string(data) + ')' + limits_2_string(data.desc.limits) + " anyfunc";
                 break;
                 case "globaltype":
-                    result += "global "+ function_2_string(data) + " (;" + i + ";)" + import_2_string(wasm, data) + ") " + data.desc.valtype.type;
+                    result += "global "+ function_2_string(data) + " (;" + i + ";)" + import_2_string(data) + ") " + data.desc.valtype.type;
                 break;
             }
         }
@@ -238,6 +244,26 @@ function element_section_2_string(wasm, t = SEPARATOR){
     }).join('\n') + '\n');
 }
 
+function export_section_2_string(wasm, t = SEPARATOR){
+    //const exports = wasm.find(e => e.name === 'export');
+    //return exports.value.map(data => `${SEPARATOR}(export "${data.name}" ${descriptor_2_string(wasm, data)})`).join("\n");
+    return wasm.exports.length === 0 ? '' : (wasm.exports.data.map((data, i) => {
+        let result = t + "(";
+        switch(data.index.type){
+            case "memidx":
+                result += "; TODO: Google format for EXPORT MEMIDX ;";
+            break;
+            case "funcidx":
+                const func = wasm.functions.find(e => e.type === "export" && e.function.name == data.name);
+                result += "func " + function_2_string(data) + " (;" + i + ";)" + export_2_string(func.function) + ')' + descriptor_2_string(wasm, func);
+                result += body_2_string(wasm, func.body.code.body);
+            break;
+        }
+        result += ')';
+        return result;
+    }).join("\n") + '\n')
+}
+
 function global_index_2_element(wasm, index){
     const section = wasm.find(e => e.name === index.type.replace("idx", '')).value;
     return section[index.i];
@@ -248,7 +274,7 @@ function parse_wasm(wasm){
 
     // Import
     const imports = (wasm.find(e => e.name === "import") || { value: [] }).value;
-    const imports_indexes = imports.filter(e => e.hasOwnProperty("index"));
+    const imports_indexes = imports.filter(e => e.hasOwnProperty("index") && e.index.type === "typeidx");
     const imports_types = imports.filter(e => e.hasOwnProperty("type"));
     
     const functions_import_type = imports_indexes.map(e => global_index_2_element(wasm, e.index));
@@ -261,14 +287,15 @@ function parse_wasm(wasm){
 
     // Export
     const exports = (wasm.find(e => e.name === "export") || { value: [] }).value;
-    const exports_indexes = exports.filter(e => e.hasOwnProperty("index"));
-
-    const functions_descriptors = wasm.find(e => e.name === "func");
-    const functions_export_type = functions_descriptors.value.map(index => global_index_2_element(wasm, index));
-
+    const exports_indexes = exports.filter(e => e.hasOwnProperty("index") && e.index.type === "funcidx");
+    
+    const functions_descriptors = (wasm.find(e => e.name === "func") || { value: [] }).value;
+    const functions_export_body = (wasm.find(e => e.name === "code") || { value: [] }).value;
+    const functions_export_type = functions_descriptors.map(index => global_index_2_element(wasm, index));
     functions = functions.concat(exports_indexes.map((_, i) => new Object({
         function: exports_indexes[i],
         pipe: functions_export_type[i],
+        body: functions_export_body[i],
         type: "export"
     })));
 
@@ -305,11 +332,11 @@ function wasm_2_string(wasm){
         global_section_2_string(parsed_wasm)+
         element_section_2_string(parsed_wasm)+
         //data_section_2_string(wasm.find(e => e.name === 'data'))+'\n'+
-        //export_section_2_string(wasm)+'\n'+
+        export_section_2_string(parsed_wasm)+'\n'+
         //function_section_2_string(wasm)+'\n'+
     ')';
 
 }
 
 
-module.exports = { wasm_2_string, memory_section_2_string, export_section_2_string, data_section_2_string };
+module.exports = { wasm_2_string };
