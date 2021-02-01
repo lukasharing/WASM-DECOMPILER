@@ -17,6 +17,7 @@ function locals(data, i){
     };
 }
 
+var j_temp = 0;
 function func(data, i){
     let pointer = i;
     
@@ -26,7 +27,7 @@ function func(data, i){
 	}
     pointer += t.bytes;
     
-    let e = expr(data, pointer);
+    let e = expr(data, pointer, undefined, j_temp === 774);
     pointer += e.bytes;
 
 	return {
@@ -37,6 +38,8 @@ function func(data, i){
 
 function code(data, i){
     let pointer = i;
+
+    ++j_temp;
 
     const size = u32(data, pointer);
 	pointer += size.bytes;

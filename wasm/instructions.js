@@ -225,12 +225,13 @@ const MAGIC_IF = 0x05;
 const MAGIC_MEMORY = 0x00;
 const MAGIC_CALL_INDIRECT = 0x00;
 
-function expr(data, i, stop_opcodes = [MAGIC_END]){
+// X
+function expr(data, i, stop_opcodes = [MAGIC_END], debug = false){
     let pointer = i;
 
     let instructions = new Array();
     do{
-        let expr_instr = instr(data, pointer);
+        let expr_instr = instr(data, pointer, debug);
         instructions.push(expr_instr.value);
         pointer += expr_instr.bytes;
     }while(stop_opcodes.findIndex(op => ubyte(data, pointer).value === op) < 0);
@@ -241,11 +242,16 @@ function expr(data, i, stop_opcodes = [MAGIC_END]){
     };
 }
 
-function instr(data, i){
+// X
+function instr(data, i, debug = false){
     let pointer = i;
 
     const magic = ubyte(data, pointer);
     pointer += magic.bytes;
+
+    if(debug){
+        console.log(magic.value);
+    }
 
     let instr_result = null;
     switch(magic.value){
@@ -262,7 +268,7 @@ function instr(data, i){
             const bt_block = blocktype(data, pointer);
             pointer += bt_block.bytes;
             
-            const instr_block = expr(data, pointer);
+            const instr_block = expr(data, pointer, undefined, debug);
             pointer += instr_block.bytes;
 
             instr_result = Object.assign({ bt: bt_block.value, instr: instr_block.value}, INSTRYPE.block.value);
@@ -290,6 +296,7 @@ function instr(data, i){
             pointer += instr1_if.bytes;
             
             const magic_if = ubyte(data, pointer - 1);
+
             if(magic_if.value === MAGIC_IF){
                 instr2_if = expr(data, pointer);
                 pointer += instr2_if.bytes;                

@@ -24,4 +24,4 @@ const wasm_string = wasm_2_string(wasm);
 const b_s = new Date().getTime();
 console.log(`Stringify in ${(b_s - a_s) / 1000.0}s`);
 
-fs.writeFileSync(`${name}-decompiled.wasm`, wasm_string);
+//fs.writeFileSync(`${name}-decompiled.wasm`, wasm_string);
