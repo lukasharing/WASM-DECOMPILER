@@ -41,16 +41,20 @@ function code(data, i){
     const size = u32(data, pointer);
 	pointer += size.bytes;
 
-    const code = func(data, pointer);
-	if(size.value !== code.bytes){
-        throw `Code byte size does not match with code length.`;
-	}
-	pointer += code.bytes;
+    try{ // X
+        const code = func(data, pointer);
+        if(size.value !== code.bytes){
+            throw `Code byte size does not match with code length.`;
+        }
+        pointer += code.bytes;
 
-    return {
-        value: { code: code.value },
-        bytes: pointer - i
-    };
+        return {
+            value: { code: code.value },
+            bytes: pointer - i
+        };
+    }catch(e){
+        throw (pointer + size.value - i).toString();
+    }
 }
 
 function codesec(data, i){

@@ -21,11 +21,17 @@ function vec(data, i, B){
     const length = u32(data, pointer);
     pointer += length.bytes;
     
-    const values = new Array(length.value).fill(0).map(_ => {
-        const x = B(data, pointer);
-        pointer += x.bytes;
-        return x.value;
-    });
+    const values = new Array(length.value);
+    
+    for(let j = 0; j < length.value; ++j){
+        try{// Hack // X
+            const x = B(data, pointer);
+            pointer += x.bytes;
+            values[j] = x.value;
+        }catch(e){
+            pointer += parseInt(e);
+        }
+    }
 
     return {
         value: values, 

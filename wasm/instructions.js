@@ -26,7 +26,7 @@ const INSTRYPE = {
     local_tee: { value: { hex: 0x22, name: "local.tee", n_consume: 1, n_result: 1  } },
     
 	global_get: { value: { hex: 0x23, name: "global.get" } },
-	global_set: { value: { hex: 0x24, name: "global.set" } },
+	global_set: { value: { hex: 0x24, name: "global.set", n_consume: 1, n_result: 1 } }, // X
 
     i32_load   : { value: { hex: 0x28, name: "i32.load", n_consume: 1, n_result: 1 } },
     i64_load   : { value: { hex: 0x29, name: "i64.load", n_consume: 1, n_result: 1 } },
@@ -56,8 +56,8 @@ const INSTRYPE = {
     i32_store16: { value: { hex: 0x3B, name: "i32.store16", n_consume: 2, n_result: 1 } },
     i32_store32: { value: { hex: 0x3C, name: "i32.store32", n_consume: 2, n_result: 1 } },
 
-    memory_size: { value: { hex: 0x3F, name: "memory.size" } }, 
-    memory_grow: { value: { hex: 0x40, name: "memory.grow" } }, 
+    memory_size: { value: { hex: 0x3F, name: "memory.size", n_consume: 0, n_result: 1 } }, // X 
+    memory_grow: { value: { hex: 0x40, name: "memory.grow", n_consume: 1, n_result: 1 } }, // X
 
     i32_const: { value: { hex: 0x41, name: "i32.const" } },
     i64_const: { value: { hex: 0x42, name: "i64.const" } },

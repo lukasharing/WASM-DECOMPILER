@@ -57,8 +57,7 @@ function index_2_string(wasm, context, instruction){
             return ' ' + export_2_string(instruction) + limits_2_string(element.type.limits) + " funcref";
         break;
         case "typeidx":
-            console.log(element);
-            return import_descriptor_2_string(element);
+            return import_descriptor_2_string(wasm, element);
         break;
     }
 }
@@ -156,7 +155,7 @@ function import_params_2_string(params){
 }
 
 function params_2_string(params){
-    return params.length === 0 ? '' : ` ${params.map((e, i) => "(param $var" + i + ' ' + e.type + ')').join(' ')})`;
+    return params.length === 0 ? '' : ` ${params.map((e, i) => "(param $var" + i + ' ' + e.type + ')').join(' ')}`;
 }
 
 function results_2_string(results){
@@ -164,7 +163,7 @@ function results_2_string(results){
 }
 
 function import_descriptor_2_string(wasm, func){
-    return import_params_2_string(func.pipe.arguments.types) + results_2_string(func.pipe.result.types);
+    return import_params_2_string(func.arguments.types) + results_2_string(func.result.types);
 }
 
 function descriptor_2_string(wasm, func){
@@ -237,21 +236,29 @@ function function_section_2_string(wasm, functions, t = SEPARATOR){
         switch(func.type){
             case "import":
                 result += " (;" + i + ";)" + import_2_string(func);
-                result += import_descriptor_2_string(wasm, func);
+                result += import_descriptor_2_string(wasm, func.pipe);
             break;
             case "function":
                 result += descriptor_2_string(wasm, func);
                 result += '\n';// + index_2_string(wasm, {}, data);
-                result += locals_2_string(wasm, func, t + SEPARATOR);
-                result += body_2_string(wasm, func.code.code, t + SEPARATOR) + '\n';
-                result += SEPARATOR;
+                if(func.code === undefined){
+                    result += (t + SEPARATOR) + "Error Trying to compile" + '\n';
+                }else{
+                    result += locals_2_string(wasm, func, t + SEPARATOR);
+                    result += body_2_string(wasm, func.code.code, t + SEPARATOR) + '\n';
+                    result += SEPARATOR;
+                }
             break;
             case "export":
                 result += " (;" + (wasm.functions.import.length + i) + ";)" + export_2_string(func);
                 result += descriptor_2_string(wasm, func) + '\n';
-                result += locals_2_string(wasm, func, t + SEPARATOR);
-                result += body_2_string(wasm, func.code.code, t + SEPARATOR) + '\n';
-                result += SEPARATOR;
+                if(func.code === undefined){
+                    result += (t + SEPARATOR) + "Error Trying to compile" + '\n';
+                }else{
+                    result += locals_2_string(wasm, func, t + SEPARATOR);
+                    result += body_2_string(wasm, func.code.code, t + SEPARATOR) + '\n';
+                    result += SEPARATOR;
+                }
             break;
         }
         result += ')';
