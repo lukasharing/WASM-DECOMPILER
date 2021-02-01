@@ -295,7 +295,7 @@ function instr(data, i){
                 pointer += instr2_if.bytes;                
             }
 
-            instr_result = Object.assign({ bt: bt_if.value, block_if: instr1_if.value, block_else: instr2_if.value}, INSTRYPE.if.value);
+            instr_result = Object.assign({ bt: bt_if.value, instr: instr1_if.value, instr_else: instr2_if.value}, INSTRYPE.if.value);
 
         break;
         
