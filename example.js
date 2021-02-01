@@ -13,6 +13,7 @@ const wasm_buffer = Buffer.from(fs.readFileSync(name, "ascii"), "base64");
 
 const a_c = new Date().getTime();
 const wasm = decompile(wasm_buffer);
+const b_c = new Date().getTime();
 console.log(`Compiled in ${(b_c - a_c) / 1000.0}s`);
 
 

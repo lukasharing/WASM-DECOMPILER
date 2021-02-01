@@ -89,6 +89,9 @@ function get_n_2_consume(wasm, context, instruction){
     }else if(instruction.name === "call"){
         const element = index_2_element(wasm, context, instruction);
         return element.pipe.arguments.types.length;
+    }else if(instruction.name === "call_indirect"){
+        const element = index_2_element(wasm, context, instruction);
+        return element.arguments.types.length;
     }
     return 0;
 }
