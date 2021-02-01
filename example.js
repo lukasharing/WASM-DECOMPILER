@@ -6,7 +6,7 @@ const { wasm_2_string } = require("./wasm_2_string");
 
 //const name = "../h2020";
 //const wasm_buffer = fs.readFileSync(name);
-const name = "./examples/code-2";
+const name = "./examples/code-1";
 //const name = "../squoosh";
 const wasm_buffer = Buffer.from(fs.readFileSync(name, "ascii"), "base64");
 

@@ -45,7 +45,7 @@ function index_2_string(wasm, context, instruction){
             return ""; //mutability_2_string(wasm, element);
         break;
         case "funcidx":
-            return ""; //function_2_string(element.function);
+            return function_2_string(element);
         break;
         case "localidx":
             return " $var" + element;

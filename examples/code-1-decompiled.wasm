@@ -3,182 +3,189 @@
   (func $env.printf (;1;) (import "env" "printf") (param i32 i32) (result i32))
   (func $env.round (;2;) (import "env" "round") (param f64) (result f64))
   (func $env.scanf (;3;) (import "env" "scanf") (param i32 i32) (result i32))
-  (; TODO: Google format for EXPORT MEMIDX ;)
-  (func $main (;1;) (export "main") (result i32)
+  (memory $memory (;0;) (export "memory"))
+  (func $main (;4;) (export "main") (result i32)
     (local $var0 i32) (local $var1 i32)
     i32.store offset=4
+      i32.const 0
       local.tee $var1
         i32.sub
-          i32.const 80
           i32.load offset=4
             i32.const 0
-      i32.const 0
+          i32.const 80
     i32.store offset=76
-      i32.const 0
       local.get $var1
+      i32.const 0
     drop
       call $env.printf
-        i32.const 0
         i32.const 16
+        i32.const 0
     i32.store offset=64
-      i32.add
-        i32.const 72
-        local.get $var1
       local.get $var1
+      i32.add
+        local.get $var1
+        i32.const 72
     drop
       call $env.scanf
-        i32.add
-          i32.const 64
-          local.get $var1
         i32.const 48
+        i32.add
+          local.get $var1
+          i32.const 64
     i32.store offset=68
+      local.get $var1
       local.tee $var0
         call $_Z16checkPrimeNumberi
           i32.load offset=72
             local.get $var1
-      local.get $var1
     block ##
       block ##
         br_if $label$0
           i32.ne
-            i32.const 1
             local.get $var0
+            i32.const 1
         i32.store offset=32
+          local.get $var1
           i32.load offset=72
             local.get $var1
-          local.get $var1
         drop
           call $env.printf
-            i32.add
-              i32.const 32
-              local.get $var1
             i32.const 64
+            i32.add
+              local.get $var1
+              i32.const 32
         br $label$1
+      end ##
       i32.store offset=48
+        local.get $var1
         i32.load offset=72
           local.get $var1
-        local.get $var1
       drop
         call $env.printf
-          i32.add
-            i32.const 48
-            local.get $var1
           i32.const 96
+          i32.add
+            local.get $var1
+            i32.const 48
+    end ##
     i32.store offset=68
+      local.get $var1
       local.tee $var0
         call $_Z20checkArmstrongNumberi
           i32.load offset=72
             local.get $var1
-      local.get $var1
     block ##
       block ##
         br_if $label$0
           i32.ne
-            i32.const 1
             local.get $var0
+            i32.const 1
         i32.store offset=0
+          local.get $var1
           i32.load offset=72
             local.get $var1
-          local.get $var1
         drop
           call $env.printf
-            local.get $var1
             i32.const 128
+            local.get $var1
         br $label$1
+      end ##
       i32.store offset=16
+        local.get $var1
         i32.load offset=72
           local.get $var1
-        local.get $var1
       drop
         call $env.printf
-          i32.add
-            i32.const 16
-            local.get $var1
           i32.const 160
+          i32.add
+            local.get $var1
+            i32.const 16
+    end ##
     i32.store offset=4
-      i32.add
-        i32.const 80
-        local.get $var1
       i32.const 0
+      i32.add
+        local.get $var1
+        i32.const 80
     i32.const 0
   )
-  (func $_Z16checkPrimeNumberi (;2;) (export "_Z16checkPrimeNumberi") (param $var0 i32) (result i32)
+  (func $_Z16checkPrimeNumberi (;5;) (export "_Z16checkPrimeNumberi") (param $var0 i32)) (result i32)
     (local $var1 i32)
     i32.store offset=24
-      local.get $var0
       local.tee $var1
         i32.sub
-          i32.const 32
           i32.load offset=4
             i32.const 0
+          i32.const 32
+      local.get $var0
     i32.store offset=16
-      i32.const 1
       local.get $var1
+      i32.const 1
     i32.store offset=28
+      local.get $var1
       local.tee $var0
         i32.load offset=24
           local.get $var1
-      local.get $var1
     i32.store offset=12
+      local.get $var1
       i32.trunc_f64_s
         f64.sqrt
           i64.convert_i32_s
             local.get $var0
-      local.get $var1
     i32.store offset=20
-      i32.const 2
       local.get $var1
+      i32.const 2
     block ##
       loop ##
         br_if $label$1
           i32.gt_s
-            i32.load offset=12
-              local.get $var1
             i32.load offset=20
+              local.get $var1
+            i32.load offset=12
               local.get $var1
         block ##
           br_if $label$0
             i32.eqz
               i32.rem_s
-                i32.load offset=20
-                  local.get $var1
                 i32.load offset=24
                   local.get $var1
+                i32.load offset=20
+                  local.get $var1
           i32.store offset=20
+            local.get $var1
             i32.add
-              i32.const 1
               i32.load offset=20
                 local.get $var1
-            local.get $var1
+              i32.const 1
           br $label$1
+        end ##
+      end ##
       i32.store offset=16
-        i32.const 0
         local.get $var1
+        i32.const 0
+    end ##
     i32.load offset=16
       local.get $var1
   )
-  (func $_Z20checkArmstrongNumberi (;3;) (export "_Z20checkArmstrongNumberi") (param $var0 i32) (result i32)
+  (func $_Z20checkArmstrongNumberi (;6;) (export "_Z20checkArmstrongNumberi") (param $var0 i32)) (result i32)
     (local $var1 i32) (local $var2 i32)
     i32.store offset=4
+      i32.const 0
       local.tee $var2
         i32.sub
-          i32.const 48
           i32.load offset=4
             i32.const 0
-      i32.const 0
+          i32.const 48
     i32.store offset=36
+      local.get $var2
       local.get $var0
-      local.get $var2
     i32.store offset=24
+      local.get $var2
       i32.const 0
-      local.get $var2
     i64.store offset=8
-      i64.const 0
       local.get $var2
+      i64.const 0
     i32.store offset=32
+      local.get $var2
       i32.load offset=36
         local.get $var2
-      local.get $var2
     block ##
       br_if $label$0
         i32.eqz
@@ -186,24 +193,26 @@
             local.get $var2
       loop ##
         i32.store offset=32
+          local.get $var2
           i32.div_s
-            i32.const 10
             i32.load offset=32
               local.get $var2
-          local.get $var2
+            i32.const 10
         i32.store offset=24
+          local.get $var2
           i32.add
-            i32.const 1
             i32.load offset=24
               local.get $var2
-          local.get $var2
+            i32.const 1
         br_if $label$0
           i32.load offset=32
             local.get $var2
+      end ##
+    end ##
     i32.store offset=32
+      local.get $var2
       i32.load offset=36
         local.get $var2
-      local.get $var2
     block ##
       br_if $label$0
         i32.eqz
@@ -211,41 +220,43 @@
             local.get $var2
       loop ##
         i32.store offset=28
+          local.get $var2
           local.tee $var1
             i32.rem_s
-              i32.const 10
               i32.load offset=32
                 local.get $var2
-          local.get $var2
+              i32.const 10
         local.set $var0
           i32.load offset=24
             local.get $var2
         i32.store offset=44
+          local.get $var2
           local.get $var1
-          local.get $var2
         i32.store offset=40
-          local.get $var0
           local.get $var2
+          local.get $var0
         f64.store offset=8
+          local.get $var2
           f64.add
-            f64.load offset=8
-              local.get $var2
             call $env.pow
-              i64.convert_i32_s
-                local.get $var0
               i64.convert_i32_s
                 i32.load offset=44
                   local.get $var2
-          local.get $var2
+              i64.convert_i32_s
+                local.get $var0
+            f64.load offset=8
+              local.get $var2
         i32.store offset=32
+          local.get $var2
           i32.div_s
-            i32.const 10
             i32.load offset=32
               local.get $var2
-          local.get $var2
+            i32.const 10
         br_if $label$0
           i32.load offset=32
             local.get $var2
+      end ##
+    end ##
     local.set $var0
       i32.load offset=36
         local.get $var2
@@ -253,26 +264,28 @@
       block ##
         br_if $label$0
           f64.ne
-            i64.convert_i32_s
-              local.get $var0
             call $env.round
               f64.load offset=8
                 local.get $var2
+            i64.convert_i32_s
+              local.get $var0
         i32.store offset=20
-          i32.const 1
           local.get $var2
+          i32.const 1
         br $label$1
+      end ##
       i32.store offset=20
-        i32.const 0
         local.get $var2
+        i32.const 0
+    end ##
     local.set $var0
       i32.load offset=20
         local.get $var2
     i32.store offset=4
-      i32.add
-        i32.const 48
-        local.get $var2
       i32.const 0
+      i32.add
+        local.get $var2
+        i32.const 48
     local.get $var0
   )
 )
