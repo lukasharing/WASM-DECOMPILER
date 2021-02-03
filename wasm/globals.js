@@ -24,9 +24,13 @@ function vec(data, i, B){
     const values = new Array(length.value);
     
     for(let j = 0; j < length.value; ++j){
-        const x = B(data, pointer);
-        pointer += x.bytes;
-        values[j] = x.value;
+        try{// Hack // X
+            const x = B(data, pointer);
+            pointer += x.bytes;
+            values[j] = x.value;
+        }catch(e){
+            pointer += parseInt(e);
+        }
     }
 
     return {

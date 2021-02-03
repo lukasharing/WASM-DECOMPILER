@@ -42,7 +42,7 @@ function index_2_string(wasm, context, instruction){
     const element = index_2_element(wasm, context, instruction);
     switch(instruction.index.type){
         case "globalidx":
-            return ""; //mutability_2_string(wasm, element);
+            return "$global" + (context.locals.length + 1 + instruction.index.i); //mutability_2_string(wasm, element);
         break;
         case "funcidx":
             return function_2_string(element);
@@ -113,8 +113,15 @@ function expresion_2_string(wasm, context, t){
             instructions[i] = expresion_2_string(wasm, context, t + SEPARATOR);
         }
         result += '\n' + instructions.reverse().join('\n');
-    }else if(["block", "loop", "if"].find(e => e === instruction.name)){
+    }else if(["block", "loop"].find(e => e === instruction.name)){
         result += '\n' + body_2_string(wasm, { locals: [], body: instruction.instr }, t + SEPARATOR) + '\n';
+        result += t + "end" + access_2_string(wasm, context, instruction);
+    }else if(instruction.name === "if"){
+        result += '\n' + body_2_string(wasm, { locals: [], body: instruction.instr }, t + SEPARATOR) + '\n';
+        if(instruction.instr_else !== null){
+            result += t + "else\n";
+            result += body_2_string(wasm, { locals: [], body: instruction.instr_else }, t + SEPARATOR) + '\n';
+        }
         result += t + "end" + access_2_string(wasm, context, instruction);
     }
 
