@@ -24,13 +24,9 @@ function vec(data, i, B){
     const values = new Array(length.value);
     
     for(let j = 0; j < length.value; ++j){
-        try{// Hack // X
-            const x = B(data, pointer);
-            pointer += x.bytes;
-            values[j] = x.value;
-        }catch(e){
-            pointer += parseInt(e);
-        }
+        const x = B(data, pointer);
+        pointer += x.bytes;
+        values[j] = x.value;
     }
 
     return {
@@ -91,10 +87,10 @@ function name(data, i){
 function memarg(data, i){
     let pointer = i;
 
-    let a = ubyte(data, pointer);
+    let a = u32(data, pointer);
     pointer += a.bytes;
 
-    let o = ubyte(data, pointer);
+    let o = u32(data, pointer);
     pointer += o.bytes;
     
     return {

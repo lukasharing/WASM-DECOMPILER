@@ -1,0 +1,167 @@
+(module
+  (global $env.stdin (;0;) (import "env" "stdin") i32)
+  (func $env.fclose (;0;) (import "env" "fclose") (param i32) (result i32))
+  (func $env.fflush (;1;) (import "env" "fflush") (param i32) (result i32))
+  (func $env.fopen (;2;) (import "env" "fopen") (param i32 i32) (result i32))
+  (func $env.fread (;3;) (import "env" "fread") (param i32 i32 i32 i32) (result i32))
+  (func $env.fwrite (;4;) (import "env" "fwrite") (param i32 i32 i32 i32) (result i32))
+  (func $env.gets (;5;) (import "env" "gets") (param i32) (result i32))
+  (func $env.printf (;6;) (import "env" "printf") (param i32 i32) (result i32))
+  (func $env.scanf (;7;) (import "env" "scanf") (param i32 i32) (result i32))
+  (memory $memory (;0;) (export "memory"))
+  (func $main (;8;) (export "main") (result i32)
+    (local $var0 i32) (local $var1 i32)
+    i32.store offset=4
+      i32.const 0
+      local.tee $var1
+        i32.sub
+          i32.load offset=4
+            i32.const 0
+          i32.const 608
+    i32.store offset=604
+      local.get $var1
+      i32.const 0
+    i32.store offset=28
+      local.get $var1
+      call $env.fopen
+        i32.const 16
+        i32.const 32
+    i32.store offset=24
+      local.get $var1
+      i32.const 0
+    block ##
+      loop ##
+        br_if $label$1
+          i32.gt_s
+            i32.load offset=24
+              local.get $var1
+            i32.const 4
+        drop
+          call $env.fflush
+            i32.load offset=0
+              global.get
+        drop
+          call $env.printf
+            i32.const 48
+            i32.const 0
+        drop
+          call $env.gets
+            i32.add
+              i32.add
+                local.get $var1
+                i32.const 320
+              i32.mul
+                i32.load offset=24
+                  local.get $var1
+                i32.const 56
+        drop
+          call $env.printf
+            i32.const 64
+            i32.const 0
+        i32.store offset=0
+          local.get $var1
+          i32.add
+            i32.add
+              i32.add
+                local.get $var1
+                i32.const 320
+              i32.mul
+                i32.load offset=24
+                  local.get $var1
+                i32.const 56
+            i32.const 52
+        drop
+          call $env.scanf
+            i32.const 80
+            local.get $var1
+        i32.store offset=24
+          local.get $var1
+          i32.add
+            i32.load offset=24
+              local.get $var1
+            i32.const 1
+        br $label$0
+      end ##
+    end ##
+    drop
+      call $env.fwrite
+        i32.add
+          local.get $var1
+          i32.const 320
+        i32.const 280
+        i32.const 1
+        i32.load offset=28
+          local.get $var1
+    drop
+      call $env.fclose
+        i32.load offset=28
+          local.get $var1
+    i32.store offset=28
+      local.get $var1
+      local.tee $var0
+        call $env.fopen
+          i32.const 16
+          i32.const 96
+    drop
+      call $env.fread
+        i32.add
+          local.get $var1
+          i32.const 32
+        i32.const 280
+        i32.const 1
+        local.get $var0
+    i32.store offset=24
+      local.get $var1
+      i32.const 0
+    block ##
+      loop ##
+        br_if $label$1
+          i32.gt_s
+            i32.load offset=24
+              local.get $var1
+            i32.const 4
+        i32.store offset=20
+          local.get $var1
+          i32.load offset=52
+            local.tee $var0
+              i32.add
+                i32.add
+                  local.get $var1
+                  i32.const 32
+                i32.mul
+                  i32.load offset=24
+                    local.get $var1
+                  i32.const 56
+        i32.store offset=16
+          local.get $var1
+          local.get $var0
+        drop
+          call $env.printf
+            i32.const 112
+            i32.add
+              local.get $var1
+              i32.const 16
+        i32.store offset=24
+          local.get $var1
+          i32.add
+            i32.load offset=24
+              local.get $var1
+            i32.const 1
+        br $label$0
+      end ##
+    end ##
+    drop
+      call $env.fclose
+        i32.load offset=28
+          local.get $var1
+    local.set $var0
+      i32.load offset=604
+        local.get $var1
+    i32.store offset=4
+      i32.const 0
+      i32.add
+        local.get $var1
+        i32.const 608
+    local.get $var0
+  )
+)

@@ -26,7 +26,7 @@ const INSTRYPE = {
     local_tee: { value: { hex: 0x22, name: "local.tee", n_consume: 1, n_result: 1  } },
     
 	global_get: { value: { hex: 0x23, name: "global.get" } },
-	global_set: { value: { hex: 0x24, name: "global.set", n_consume: 1, n_result: 1 } }, // X
+	global_set: { value: { hex: 0x24, name: "global.set", n_consume: 1, n_result: 1 } },
 
     i32_load   : { value: { hex: 0x28, name: "i32.load", n_consume: 1, n_result: 1 } },
     i64_load   : { value: { hex: 0x29, name: "i64.load", n_consume: 1, n_result: 1 } },
@@ -56,8 +56,8 @@ const INSTRYPE = {
     i32_store16: { value: { hex: 0x3B, name: "i32.store16", n_consume: 2, n_result: 1 } },
     i32_store32: { value: { hex: 0x3C, name: "i32.store32", n_consume: 2, n_result: 1 } },
 
-    memory_size: { value: { hex: 0x3F, name: "memory.size", n_consume: 0, n_result: 1 } }, // X 
-    memory_grow: { value: { hex: 0x40, name: "memory.grow", n_consume: 1, n_result: 1 } }, // X
+    memory_size: { value: { hex: 0x3F, name: "memory.size", n_consume: 0, n_result: 1 } },
+    memory_grow: { value: { hex: 0x40, name: "memory.grow", n_consume: 1, n_result: 1 } },
 
     i32_const: { value: { hex: 0x41, name: "i32.const" } },
     i64_const: { value: { hex: 0x42, name: "i64.const" } },
@@ -225,13 +225,12 @@ const MAGIC_IF = 0x05;
 const MAGIC_MEMORY = 0x00;
 const MAGIC_CALL_INDIRECT = 0x00;
 
-// X
-function expr(data, i, stop_opcodes = [MAGIC_END], debug = false){
+function expr(data, i, stop_opcodes = [MAGIC_END]){
     let pointer = i;
 
     let instructions = new Array();
     do{
-        let expr_instr = instr(data, pointer, debug);
+        let expr_instr = instr(data, pointer);
         instructions.push(expr_instr.value);
         pointer += expr_instr.bytes;
     }while(stop_opcodes.findIndex(op => ubyte(data, pointer).value === op) < 0);
@@ -242,16 +241,11 @@ function expr(data, i, stop_opcodes = [MAGIC_END], debug = false){
     };
 }
 
-// X
-function instr(data, i, debug = false){
+function instr(data, i){
     let pointer = i;
 
     const magic = ubyte(data, pointer);
     pointer += magic.bytes;
-
-    if(debug){
-        console.log(magic.value);
-    }
 
     let instr_result = null;
     switch(magic.value){
@@ -268,7 +262,7 @@ function instr(data, i, debug = false){
             const bt_block = blocktype(data, pointer);
             pointer += bt_block.bytes;
             
-            const instr_block = expr(data, pointer, undefined, debug);
+            const instr_block = expr(data, pointer, undefined);
             pointer += instr_block.bytes;
 
             instr_result = Object.assign({ bt: bt_block.value, instr: instr_block.value}, INSTRYPE.block.value);
@@ -290,13 +284,12 @@ function instr(data, i, debug = false){
             
             const bt_if = blocktype(data, pointer);
             pointer += bt_if.bytes;
-        
+
             let instr1_if = expr(data, pointer, [MAGIC_END, MAGIC_IF]);
             let instr2_if = { value: null };
             pointer += instr1_if.bytes;
-            
-            const magic_if = ubyte(data, pointer - 1);
 
+            const magic_if = ubyte(data, pointer - 1);
             if(magic_if.value === MAGIC_IF){
                 instr2_if = expr(data, pointer);
                 pointer += instr2_if.bytes;                
