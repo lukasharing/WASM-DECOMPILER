@@ -42,7 +42,7 @@ function index_2_string(wasm, context, instruction){
     const element = index_2_element(wasm, context, instruction);
     switch(instruction.index.type){
         case "globalidx":
-            return "$global" + (context.locals.length + 1 + instruction.index.i); //mutability_2_string(wasm, element);
+            return " $global" + (context.locals.length + 1 + instruction.index.i); //mutability_2_string(wasm, element);
         break;
         case "funcidx":
             return function_2_string(element);
@@ -217,7 +217,7 @@ function import_section_2_string(wasm, subsection, t = SEPARATOR){
 function element_section_2_string(wasm, t = SEPARATOR){
     return wasm.elements.length === 0 ? '' : (wasm.elements.map((data, i) => {
         // TODO: Check if these indices have names with that indices
-        return SEPARATOR + "(elem $elem" + i + " (" + expresion_2_string(wasm, { locals: [], body: data.offset }, '') + ')' + data.init.map(index => index_2_string(wasm, {}, { index: index })).join('') + ')';
+        return SEPARATOR + "(elem $elem" + i + " (" + expresion_2_string(wasm, { locals: [], body: data.offset }, '') + ')' + data.init.map(index => index_2_string(wasm, { locals: [], code: [] }, { index: index })).join('') + ')';
     }).join('\n') + '\n');
 }
 
@@ -226,13 +226,13 @@ function export_section_2_string(wasm, subsection, t = SEPARATOR){
         let result = t + '(';
         switch(data.index.type){
             case "tableidx":
-                result += "table" + function_2_string(data) + index_2_string(wasm, {}, data);
+                result += "table" + function_2_string(data) + index_2_string(wasm, { locals: [], code: [] }, data);
             break;
             case "memidx":
                 result += "memory" + function_2_string(data) + " (;" + i + ";)" + export_2_string(data);
             break;
             case "globalidx":
-                result += "global" + function_2_string(data) + " (;" + i + ";)" + export_2_string(data) + index_2_string(wasm, {}, Object.assign({ i: i }, data));
+                result += "global" + function_2_string(data) + " (;" + i + ";)" + export_2_string(data) + index_2_string(wasm, { locals: [], code: [] }, Object.assign({ i: i }, data));
             break;
         }
         result += ')';
